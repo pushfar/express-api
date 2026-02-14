@@ -146,7 +146,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} data The object data to update on the resource as {key: value}
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	update<T>(where: object | string | number, data: object | object[]): Promise<T[]> {
+	update<T>(where: object | string | number | null, data: object | object[]): Promise<T[]> {
 		data = this.__cleanIncommingData(data);
 		if (!where || ['object', 'string', 'number'].indexOf(typeof where) < 0) throw new ModelError('Must use where criteria in update as either an ID or object containing col: value');
 		if (typeof where !== 'object') where = { id: where };

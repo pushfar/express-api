@@ -1,5 +1,6 @@
 import Core from '../../System/Core.js';
 import { GlobalsType } from '../../Types/System.js';
+import Mysql from '../../Service/Mysql.js';
 /**
  * @module express-api/Base/Model/Mysql
  * @class ModelMysql
@@ -35,7 +36,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
      * @desciption Get the services available to the system
      * @return {any} MySQL connection
      */
-    get db(): any;
+    get db(): Mysql['con'];
     /**
      * @public notSoftDeleted
      * @desciption Get insertable for soft delete check
@@ -48,34 +49,34 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
      * @param {Number} id The resource id to get
      * @return {Promise} a resulting promise of data or error on failure
      */
-    get(id: any): Promise<any>;
+    get<T>(id: string | number): Promise<T>;
     /**
      * @public @method find
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    find(where: any): Promise<any>;
+    find<T>(where: object): Promise<T[]>;
     /**
      * @public @method first
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    first(where?: any): Promise<any>;
+    first<T>(where?: object): Promise<T>;
     /**
      * @public @method last
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    last(where?: any): Promise<any>;
+    last<T>(where?: object): Promise<T>;
     /**
      * @public @method all
      * @description all resources from a single table
      * @return {Promise} a resulting promise of data or error on failure
      */
-    all(): Promise<any>;
+    all<T>(): Promise<T[]>;
     /**
      * @public @method insert
      * @description Insert single/many resource/s in a single table, clear any default data (id, created, updated)
@@ -83,7 +84,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
      * @param {Mixed} returning The array of returned columns or a string
      * @return {Promise} a resulting promise of data or error on failure
      */
-    insert(data: any, returning?: any): Promise<any>;
+    insert<T>(data: object | object[], returning?: string[] | undefined): Promise<T[]>;
     /**
      * @public @method update
      * @description Update a single resource in a single table by table id, clear any default data (id, created, updated)
@@ -91,21 +92,21 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
      * @param {Object} data The object data to update on the resource as {key: value}
      * @return {Promise} a resulting promise of data or error on failure
      */
-    update(where: any, data: any): Promise<any>;
+    update<T>(where: object | string | number | null, data: object | object[]): Promise<T[]>;
     /**
      * @public @method delete
      * @description Delete a single resource in a single table by table id
      * @param {Number} id The resource id to delete
      * @return {Promise} a resulting promise of data or error on failure
      */
-    delete(id: any, type?: string): Promise<any>;
+    delete(id: string | number, type?: string | undefined): Promise<void>;
     /**
      * @public @method restore
      * @description Soft restore a single resource (undelete) in a single table that has been soft deleted
      * @param {Number} id The resource id to soft restore
      * @return {Promise} a resulting promise of data or error on failure
      */
-    restore(id: any): Promise<any>;
+    restore(id: string | number): Promise<void>;
     /**
      * @public @method queryWhere
      * @description Builds an SQL query snippit to add on to a query, from an object including where property or simple key values matching table names

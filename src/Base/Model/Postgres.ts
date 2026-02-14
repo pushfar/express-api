@@ -120,7 +120,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Mixed} returning The array of returned columns or a string
      * @return {Promise} a resulting promise of data or error on failure
      */
-	insert<T>(data: object | object[], returning?: string[] | undefined): Promise<T[]> { 
+	insert<T>(data: object | object[], returning?: string | string[] | undefined): Promise<T[]> { 
 		data = this.__cleanIncommingData(data, true);
 		const castData = Array.isArray(data) ? data : [data];
 
@@ -153,7 +153,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Mixed} returning The array of returned columns or a string
 	 * @return {Promise} a resulting promise of data or error on failure
      */
-	update<T>(where: object | string, data: object | object[], returning?: string[] | undefined): Promise<T[]> {
+	update<T>(where: object | string | null, data: object | object[], returning?: string | string[] | undefined): Promise<T[]> {
 		data = this.__cleanIncommingData(data);
 		if (!where || ['object', 'string', 'number'].indexOf(typeof where) < 0) throw new ModelError('Must use where criteria in update as either an ID or object containing col: value');
 		if (typeof where !== 'object') where = { id: where };
@@ -255,8 +255,8 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Boolean} partial The flag to force a partial map on only data available in dataset
      * @return {Array} a resulting promise of data or error on failure
      */
-	mapDataArrayToColumn<T>(data: object[], partial?: boolean): T[] {
-		if (partial && !data) return [] as T[];
+	mapDataArrayToColumn<T>(data: any, partial?: boolean): T[] | undefined {
+		if (partial && !data) return undefined;
 		if (!data || !data.length) throw new ModelError('Data must be an array of data objects for [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']');
 
 		// array of data entries?

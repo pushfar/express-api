@@ -89,7 +89,7 @@ export default class ModelMysql extends Core {
      * @description all resources from a single table
      * @return {Promise} a resulting promise of data or error on failure
      */
-    all() { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`); }
+    all() { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`).then(([rows]) => rows); }
     /**
      * @public @method insert
      * @description Insert single/many resource/s in a single table, clear any default data (id, created, updated)
@@ -99,11 +99,10 @@ export default class ModelMysql extends Core {
      */
     insert(data, returning) {
         data = this.__cleanIncommingData(data, true);
-        if (typeof data === 'object' && data.length === undefined)
-            data = [data];
-        let qk = Object.keys(data[0]).map((k) => `${this.inject(k)}`).join(',');
+        const castData = Array.isArray(data) ? data : [data];
+        let qk = Object.keys(castData[0]).map((k) => `${this.inject(k)}`).join(',');
         let cc = 0;
-        let qv = data.map((d, i) => '(' + Object.values(d).map((dd, ii) => {
+        let qv = castData.map((d, i) => '(' + Object.values(d).map((dd, ii) => {
             cc++;
             if (dd && !isNaN(dd.x) && !isNaN(dd.y)) {
                 cc++;
@@ -111,7 +110,7 @@ export default class ModelMysql extends Core {
             }
             return `?`;
         }).join(',') + ')').join(',');
-        let v = data.flatMap((d) => Object.values(d).flatMap((d) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
+        let v = castData.flatMap((d) => Object.values(d).flatMap((d) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
         return this.db.query(`INSERT INTO ${this.inject(this.table)} (${qk}) VALUES ${qv};`, v).then(([rows]) => rows || []);
     }
     /**

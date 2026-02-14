@@ -1,5 +1,6 @@
 import Core from '../../System/Core.js';
 import { GlobalsType } from '../../Types/System.js';
+import { Client } from 'pg';
 /**
  * @module express-api/Base/Model/Postgres
  * @class ModelPG
@@ -35,7 +36,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @desciption Get the services available to the system via the database
      * @return {Client} The PG Client via node-pg
      */
-    get db(): any;
+    get db(): Client;
     /**
      * @public notSoftDeleted
      * @desciption Get insertable for soft delete check
@@ -48,34 +49,34 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Number} id The resource id to get
      * @return {Promise} a resulting promise of data or error on failure
      */
-    get(id: any): Promise<any>;
+    get<T>(id: string | number): Promise<T>;
     /**
      * @public @method find
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    find(where: any): Promise<any>;
+    find<T>(where: object): Promise<T[]>;
     /**
      * @public @method first
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    first(where?: any): Promise<any>;
+    first<T>(where?: object): Promise<T>;
     /**
      * @public @method last
      * @description Find one or more resources from a where object in a single table
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-    last(where?: any): Promise<any>;
+    last<T>(where?: object): Promise<T>;
     /**
      * @public @method all
      * @description all resources from a single table
      * @return {Promise} a resulting promise of data or error on failure
      */
-    all(): Promise<any>;
+    all<T>(): Promise<T[]>;
     /**
      * @public @method insert
      * @description Insert single/many resource/s in a single table, clear any default data (id, created, updated)
@@ -83,7 +84,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Mixed} returning The array of returned columns or a string
      * @return {Promise} a resulting promise of data or error on failure
      */
-    insert(data: any, returning?: any): Promise<any>;
+    insert<T>(data: object | object[], returning?: string | string[] | undefined): Promise<T[]>;
     /**
      * @public @method update
      * @description Update a single resource in a single table by table id, clear any default data (id, created, updated)
@@ -92,21 +93,21 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Mixed} returning The array of returned columns or a string
      * @return {Promise} a resulting promise of data or error on failure
      */
-    update(where: any, data: any, returning?: any): Promise<any>;
+    update<T>(where: object | string | null, data: object | object[], returning?: string | string[] | undefined): Promise<T[]>;
     /**
      * @public @method delete
      * @description Delete a single resource in a single table by table id
      * @param {Number} id The resource id to delete
      * @return {Promise} a resulting promise of data or error on failure
      */
-    delete(id: any, type?: string): Promise<any>;
+    delete(id: string | number, type?: string | undefined): Promise<void>;
     /**
      * @public @method restore
      * @description Soft restore a single resource (undelete) in a single table that has been soft deleted
      * @param {Number} id The resource id to soft restore
      * @return {Promise} a resulting promise of data or error on failure
      */
-    restore(id: any): Promise<any>;
+    restore(id: string | number): Promise<void>;
     /**
      * @public @method mapDataToColumn
      * @description Map all incoming data, to columns to make sure we have a full dataset, or send partial flag true to map only partial dataset
@@ -114,7 +115,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Boolean} partial The flag to force a partial map on only data available in dataset
      * @return {Object} a resulting promise of data or error on failure
      */
-    mapDataToColumn(data: any, partial?: boolean): any;
+    mapDataToColumn<T>(data: object, partial?: boolean): T;
     /**
      * @public @method mapDataArrayToColumn
      * @description Map all incoming data array of data, to columns to make sure we have a full dataset, or send partial flag true to map only partial dataset
@@ -122,14 +123,14 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Boolean} partial The flag to force a partial map on only data available in dataset
      * @return {Array} a resulting promise of data or error on failure
      */
-    mapDataArrayToColumn(data: any, partial?: boolean): any;
+    mapDataArrayToColumn<T>(data: any, partial?: boolean): T[] | undefined;
     /**
      * @public @method parseError
      * @description Parse the error code from teh database to see if we can show it, else generic message
      * @param {Error} error The error object
      * @return {Object} with parsed error data in fo rthe end user
      */
-    parseError(error: any): any;
+    parseError(error: any): object;
     /**
      * @public @method checkColumnsStrict
      * @description Check columns against dataset, ensure required are present too

@@ -89,7 +89,7 @@ export default class ModelPG extends Core {
      * @description all resources from a single table
      * @return {Promise} a resulting promise of data or error on failure
      */
-    all() { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`); }
+    all() { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`).then((res) => res.rows); }
     /**
      * @public @method insert
      * @description Insert single/many resource/s in a single table, clear any default data (id, created, updated)
@@ -99,11 +99,10 @@ export default class ModelPG extends Core {
      */
     insert(data, returning) {
         data = this.__cleanIncommingData(data, true);
-        if (typeof data === 'object' && data.length === undefined)
-            data = [data];
-        let qk = Object.keys(data[0]).map((k) => `${this.inject(k)}`).join(',');
+        const castData = Array.isArray(data) ? data : [data];
+        let qk = Object.keys(castData[0]).map((k) => `${this.inject(k)}`).join(',');
         let cc = 0;
-        let qv = data.map((d, i) => '(' + Object.values(d).map((dd, ii) => {
+        let qv = castData.map((d, i) => '(' + Object.values(d).map((dd, ii) => {
             cc++;
             if (dd && !isNaN(dd.x) && !isNaN(dd.y)) {
                 cc++;
@@ -111,7 +110,7 @@ export default class ModelPG extends Core {
             }
             return `$${cc}`;
         }).join(',') + ')').join(',');
-        let v = data.flatMap((d) => Object.values(d).flatMap((d) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
+        let v = castData.flatMap((d) => Object.values(d).flatMap((d) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
         let r = typeof returning === 'string' ? `RETURNING ${this.inject(returning)}` : (Array.isArray(returning) ? 'RETURNING ' + returning.map((ret) => this.inject(ret)).join(',') : '');
         return this.db.query(`INSERT INTO ${this.inject(this.table)} (${qk}) VALUES ${qv} ${r};`, v)
             .then((res) => res.rows || [])
@@ -166,8 +165,8 @@ export default class ModelPG extends Core {
     delete(id, type) {
         // soft delete off and not explicitly soft, or explicitly hard
         if ((!this.softDelete && type !== 'soft') || type === 'hard')
-            return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = $1;`, [id]);
-        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [new Date(), id]);
+            return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = $1;`, [id]).then(() => undefined);
+        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [new Date(), id]).then(() => undefined);
     }
     /**
      * @public @method restore
@@ -176,7 +175,7 @@ export default class ModelPG extends Core {
      * @return {Promise} a resulting promise of data or error on failure
      */
     restore(id) {
-        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [null, id]);
+        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [null, id]).then(() => undefined);
     }
     /**
      * @public @method mapDataToColumn
@@ -228,7 +227,7 @@ export default class ModelPG extends Core {
      */
     mapDataArrayToColumn(data, partial) {
         if (partial && !data)
-            return;
+            return undefined;
         if (!data || !data.length)
             throw new ModelError('Data must be an array of data objects for [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']');
         // array of data entries?
