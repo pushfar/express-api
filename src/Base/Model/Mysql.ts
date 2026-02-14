@@ -2,6 +2,7 @@ import Core from '../../System/Core';
 import ModelError from '../../Error/Model';
 import DataTools from '../../Library/DataTools';
 import { GlobalsType } from '../../Types/System';
+import Mysql from '../../Service/Mysql';
 
 /**
  * @module express-api/Base/Model/Mysql
@@ -43,7 +44,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system
 	 * @return {any} MySQL connection
 	 */
-	get db(): any { return (this.$services as any)['mysql:' + this.dbname].con }
+	get db(): Mysql['con'] { return (this.$services as any)['mysql:' + this.dbname].con }
 
 	/**
 	 * @public notSoftDeleted
@@ -58,7 +59,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Number} id The resource id to get
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	get(id: any): Promise<any> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} WHERE ${this.inject(this.idCol)} = ? ${this.notSoftDeleted('AND')} LIMIT 1;`, [id]).then(([rows]: any) => rows[0] || {}) }
+	get<T>(id: string | number): Promise<T> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} WHERE ${this.inject(this.idCol)} = ? ${this.notSoftDeleted('AND')} LIMIT 1;`, [id]).then(([rows]: any) => rows[0] || {}) }
 
 	/**
 	 * @public @method find
@@ -66,7 +67,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} where The where object as key value, or knex style where object
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	find(where: any): Promise<any> {
+	find<T>(where: object): Promise<T[]> {
 		let q = Object.keys(where).map((w, i) => ` ${this.inject(w)} = ? `).join(' AND ');
 		let v = Object.values(where);
 
@@ -79,7 +80,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} where The where object as key value, or knex style where object
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	first(where?: any): Promise<any> {
+	first<T>(where?: object): Promise<T> {
 		if (!this.createdCol) throw new ModelError('Must set created column in super request to use this feature.');
 		if (!where || Object.keys(where).length < 1) return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')} ORDER BY ${this.inject(this.createdCol)} ASC LIMIT 1;`).then(([rows]: any) => rows[0] || {});
 
@@ -95,7 +96,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} where The where object as key value, or knex style where object
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	last(where?: any): Promise<any> {
+	last<T>(where?: object): Promise<T> {
 		if (!this.createdCol) throw new ModelError('Must set created column in super request to use this feature.');
 		if (!where || Object.keys(where).length < 1) return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')} ORDER BY ${this.inject(this.createdCol)} DESC LIMIT 1;`).then(([rows]: any) => rows[0] || {});
 
@@ -110,7 +111,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @description all resources from a single table
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	all(): Promise<any> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`) }
+	all<T>(): Promise<T[]> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`).then(([rows]: any) => rows) }
 
 	/**
 	 * @public @method insert
@@ -119,13 +120,13 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Mixed} returning The array of returned columns or a string
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	insert(data: any, returning?: any): Promise<any> {
+	insert<T>(data: object | object[], returning?: string[] | undefined): Promise<T[]> {
 		data = this.__cleanIncommingData(data, true);
-		if (typeof data === 'object' && (data as any).length === undefined) data = [data];
+		const castData = Array.isArray(data) ? data : [data];
 
-		let qk = Object.keys(data[0]).map((k) => `${this.inject(k)}`).join(',');
+		let qk = Object.keys(castData[0]).map((k) => `${this.inject(k)}`).join(',');
 		let cc = 0;
-		let qv = data.map((d: any, i: number) => '(' + Object.values(d).map((dd: any, ii: number) => {
+		let qv = castData.map((d: any, i: number) => '(' + Object.values(d).map((dd: any, ii: number) => {
 			cc++;
 			if (dd && !isNaN((dd as any).x) && !isNaN((dd as any).y)) {
 				cc++;
@@ -133,7 +134,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 			}
 			return `?`;
 		}).join(',') + ')').join(',');
-		let v = data.flatMap((d: any) => Object.values(d).flatMap((d: any) => d && !isNaN((d as any).x) && !isNaN((d as any).y) ? [(d as any).x, (d as any).y] : d));
+		let v = castData.flatMap((d: any) => Object.values(d).flatMap((d: any) => d && !isNaN((d as any).x) && !isNaN((d as any).y) ? [(d as any).x, (d as any).y] : d));
 
 		return this.db.query(`INSERT INTO ${this.inject(this.table)} (${qk}) VALUES ${qv};`, v).then(([rows]: any) => rows || []);
 	}
@@ -145,7 +146,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} data The object data to update on the resource as {key: value}
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	update(where: any, data: any): Promise<any> {
+	update<T>(where: object | string | number, data: object | object[]): Promise<T[]> {
 		data = this.__cleanIncommingData(data);
 		if (!where || ['object', 'string', 'number'].indexOf(typeof where) < 0) throw new ModelError('Must use where criteria in update as either an ID or object containing col: value');
 		if (typeof where !== 'object') where = { id: where };
@@ -171,7 +172,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Number} id The resource id to delete
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	delete(id: any, type?: string): Promise<any> {
+	delete(id: string | number, type?: string | undefined): Promise<void> {
 		// soft delete off and not explicitly soft, or explicitly hard
 		if ((!this.softDelete && type !== 'soft') || type === 'hard') return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = ?;`, [id]);
 
@@ -184,7 +185,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @param {Number} id The resource id to soft restore
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	restore(id: any): Promise<any> {
+	restore(id: string | number): Promise<void> {
 		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [null, id]);
 	}
 

@@ -2,6 +2,7 @@ import Core from '../../System/Core';
 import ModelError from '../../Error/Model';
 import DataTools from '../../Library/DataTools';
 import { GlobalsType } from '../../Types/System';
+import { Client } from 'pg';
 
 /**
  * @module express-api/Base/Model/Postgres
@@ -43,7 +44,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system via the database
 	 * @return {Client} The PG Client via node-pg
 	 */
-	get db(): any { return (this.$services as any)['postgres:' + this.dbname] }
+	get db(): Client { return (this.$services as any)['postgres:' + this.dbname] }
 
 	/**
 	 * @public notSoftDeleted
@@ -58,7 +59,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Number} id The resource id to get
      * @return {Promise} a resulting promise of data or error on failure
      */
-	get(id: any): Promise<any> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} WHERE ${this.inject(this.idCol)} = $1 ${this.notSoftDeleted('AND')} LIMIT 1;`, [id]).then((res: any) => res.rows[0] || {}) }
+	get<T>(id: string | number): Promise<T> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} WHERE ${this.inject(this.idCol)} = $1 ${this.notSoftDeleted('AND')} LIMIT 1;`, [id]).then((res: any) => res.rows[0] || {}) }
 
     /**
      * @public @method find
@@ -66,7 +67,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Object} where The where object as key value, or knex style where object
      * @return {Promise} a resulting promise of data or error on failure
      */
-	find(where: any): Promise<any> { 
+	find<T>(where: object): Promise<T[]> { 
 		let q = Object.keys(where).map((w, i) => ` ${this.inject(w)} = $${i + 1} `).join(' AND ');
 		let v = Object.values(where);
 
@@ -79,7 +80,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} where The where object as key value, or knex style where object
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	first(where?: any): Promise<any> {
+	first<T>(where?: object): Promise<T> {
 		if (!this.createdCol) throw new ModelError('Must set created column in super request to use this feature.');
 		if (!where || Object.keys(where).length < 1) return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')} ORDER BY ${this.inject(this.createdCol)} ASC LIMIT 1;`).then((res: any) => res.rows[0] || {}); 
 
@@ -95,7 +96,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Object} where The where object as key value, or knex style where object
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
-	last(where?: any): Promise<any> {
+	last<T>(where?: object): Promise<T> {
 		if (!this.createdCol) throw new ModelError('Must set created column in super request to use this feature.');
 		if (!where || Object.keys(where).length < 1) return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')} ORDER BY ${this.inject(this.createdCol)} DESC LIMIT 1;`).then((res: any) => res.rows[0] || {}); 
 
@@ -110,7 +111,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @description all resources from a single table
      * @return {Promise} a resulting promise of data or error on failure
      */
-	all(): Promise<any> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`) }
+	all<T>(): Promise<T[]> { return this.db.query(`SELECT * FROM ${this.inject(this.table)} ${this.notSoftDeleted('WHERE')};`).then((res: any) => res.rows) }
 	
     /**
      * @public @method insert
@@ -119,13 +120,13 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Mixed} returning The array of returned columns or a string
      * @return {Promise} a resulting promise of data or error on failure
      */
-	insert(data: any, returning?: any): Promise<any> { 
+	insert<T>(data: object | object[], returning?: string[] | undefined): Promise<T[]> { 
 		data = this.__cleanIncommingData(data, true);
-		if (typeof data === 'object' && (data as any).length === undefined) data = [data];
+		const castData = Array.isArray(data) ? data : [data];
 
-		let qk = Object.keys(data[0]).map((k) => `${this.inject(k)}`).join(',');
+		let qk = Object.keys(castData[0]).map((k) => `${this.inject(k)}`).join(',');
 		let cc = 0;
-		let qv = data.map((d: any, i: number) => '(' + Object.values(d).map((dd: any, ii: number) => {
+		let qv = castData.map((d: any, i: number) => '(' + Object.values(d).map((dd: any, ii: number) => {
 			cc++;
 			if (dd && !isNaN(dd.x) && !isNaN(dd.y)) {
 				cc++;
@@ -133,7 +134,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 			}
 			return `$${cc}`;
 		}).join(',') + ')').join(',');
-		let v = data.flatMap((d: any) => Object.values(d).flatMap((d: any) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
+		let v = castData.flatMap((d: any) => Object.values(d).flatMap((d: any) => d && !isNaN(d.x) && !isNaN(d.y) ? [d.x, d.y] : d));
 		let r = typeof returning === 'string' ? `RETURNING ${this.inject(returning)}` : (Array.isArray(returning) ? 'RETURNING ' + returning.map((ret: any) => this.inject(ret)).join(',') : '');
 
 		return this.db.query(`INSERT INTO ${this.inject(this.table)} (${qk}) VALUES ${qv} ${r};`, v)
@@ -152,7 +153,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @param {Mixed} returning The array of returned columns or a string
 	 * @return {Promise} a resulting promise of data or error on failure
      */
-	update(where: any, data: any, returning?: any): Promise<any> {
+	update<T>(where: object | string, data: object | object[], returning?: string[] | undefined): Promise<T[]> {
 		data = this.__cleanIncommingData(data);
 		if (!where || ['object', 'string', 'number'].indexOf(typeof where) < 0) throw new ModelError('Must use where criteria in update as either an ID or object containing col: value');
 		if (typeof where !== 'object') where = { id: where };
@@ -184,11 +185,11 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Number} id The resource id to delete
      * @return {Promise} a resulting promise of data or error on failure
      */
-	delete(id: any, type?: string): Promise<any> { 
+	delete(id: string | number, type?: string | undefined): Promise<void> { 
 		// soft delete off and not explicitly soft, or explicitly hard
-		if ((!this.softDelete && type !== 'soft') || type === 'hard') return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = $1;`, [id]);
+		if ((!this.softDelete && type !== 'soft') || type === 'hard') return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = $1;`, [id]).then(() => undefined);
 	
-		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [new Date(), id]);
+		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [new Date(), id]).then(() => undefined);
 	}
 
     /**
@@ -197,8 +198,8 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Number} id The resource id to soft restore
      * @return {Promise} a resulting promise of data or error on failure
      */
-	restore(id: any): Promise<any> {
-		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [null, id]);
+	restore(id: string | number): Promise<void> {
+		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = $1 WHERE ${this.inject(this.idCol)} = $2;`, [null, id]).then(() => undefined);
 	}
 
     /**
@@ -208,32 +209,32 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Boolean} partial The flag to force a partial map on only data available in dataset
      * @return {Object} a resulting promise of data or error on failure
      */
-	mapDataToColumn(data: any, partial?: boolean): any {
+	mapDataToColumn<T>(data: object, partial?: boolean): T {
 		if (!this.columns) throw new ModelError('Cannot map data without setting columns getter in model [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']');
 		
 		// single entry
 		let clean: any = {};
 		for (const key in this.columns) {
 			let dataKey = DataTools.snakeToCamel(key);
-			if ((!data || data[dataKey] === undefined || data[dataKey] === null) && this.columns[key].required && !partial) {
+			if ((!data || data[dataKey as keyof object] === undefined || data[dataKey as keyof object] === null) && this.columns[key].required && !partial) {
 				let columns = Object.keys(this.columns).reduce((p, c) => ({...p, ...{[DataTools.snakeToCamel(c)]: this.columns![c]}}), {});
 				throw new ModelError('Invalid data, required property [' + dataKey + '] missing from [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']', columns);
 			}
 
-			if (data[dataKey] !== undefined && data[dataKey] !== null) {
-				if (!DataTools.checkType(data[dataKey], this.columns[key].type)) {
+			if (data[dataKey as keyof object] !== undefined && data[dataKey as keyof object] !== null) {
+				if (!DataTools.checkType(data[dataKey as keyof object], this.columns[key].type)) {
 					let columns = Object.keys(this.columns).reduce((p, c) => ({...p, ...{[DataTools.snakeToCamel(c)]: this.columns![c]}}), {});
 					throw new ModelError('Invalid data, property [' + dataKey + '] type incorrect for [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']', columns);
 				}
 
 				// check for point types
-				if (this.columns[key].type.split('[')[0].toLowerCase().includes('point') && (!data[dataKey] || isNaN(data[dataKey].x) || isNaN(data[dataKey].y))) {
+				if (this.columns[key].type.split('[')[0].toLowerCase().includes('point') && (!data[dataKey as keyof object] || isNaN((data[dataKey as keyof object] as any).x) || isNaN((data[dataKey as keyof object] as any).y))) {
 					let columns = Object.keys(this.columns).reduce((p, c) => ({ ...p, ...{ [DataTools.snakeToCamel(c)]: this.columns![c] } }), {});
 					throw new ModelError('Invalid data, property [' + dataKey + '] type incorrect, requires point data as {x: ..., y: ... } for [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']', columns);
 				}
 
-				clean[key] = this.columns[key].type.split('[')[0].toLowerCase().indexOf('json') < 0 ? data[dataKey] : (typeof data[dataKey] === 'string' ? data[dataKey] : JSON.stringify(data[dataKey]));
-			} else if (data[dataKey] === null) {
+				clean[key] = this.columns[key].type.split('[')[0].toLowerCase().indexOf('json') < 0 ? data[dataKey as keyof object] : (typeof data[dataKey as keyof object] === 'string' ? data[dataKey as keyof object] : JSON.stringify(data[dataKey as keyof object]));
+			} else if (data[dataKey as keyof object] === null) {
 				clean[key] = null;
 			}
 		}
@@ -244,7 +245,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 			throw new ModelError('Invalid data, must have at least one property in [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']', columns);
 		}
 
-		return Object.keys(clean).length > 0 ? clean : undefined;
+		return Object.keys(clean).length > 0 ? clean as T : undefined as T;
 	}
 
     /**
@@ -254,8 +255,8 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Boolean} partial The flag to force a partial map on only data available in dataset
      * @return {Array} a resulting promise of data or error on failure
      */
-	mapDataArrayToColumn(data: any, partial?: boolean): any {
-		if (partial && !data) return;
+	mapDataArrayToColumn<T>(data: object[], partial?: boolean): T[] {
+		if (partial && !data) return [] as T[];
 		if (!data || !data.length) throw new ModelError('Data must be an array of data objects for [' + DataTools.snakeToCamel(this.table.split('.')[1]) + ']');
 
 		// array of data entries?
@@ -270,7 +271,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
      * @param {Error} error The error object
      * @return {Object} with parsed error data in fo rthe end user
      */
-	parseError(error: any): any {
+	parseError(error: any): object {
 		if (!error) return { expected: this.columns };
 		if (error.code == '22P02' && error.routine == 'string_to_uuid') return { error: 'invalid data', detail: 'uuid' };
 		if (error.code == '23505') return { error: 'not unique', detail: error.detail.split(')=(')[0].split('(')[1] };
