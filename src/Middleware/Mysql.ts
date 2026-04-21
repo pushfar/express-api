@@ -11,6 +11,19 @@ import { GlobalsType } from '../Types/System';
  */
 export default class Mysql<T extends GlobalsType> extends Middleware<T> {
 
+	public name: string;
+
+	/**
+	 * @public @method constructor
+	 * @description Base method when instantiating class
+	 */
+	constructor(globals: T, name = 'mysql') {
+		super(globals);
+
+		// create mysql2
+		this.name = name;
+	}
+
 	/**
 	 * @public @method start
 	 * @description Invoke middleware for incoming request
@@ -20,7 +33,7 @@ export default class Mysql<T extends GlobalsType> extends Middleware<T> {
 		// start DB connections to all mysql services
 		const services: Promise<any>[] = [];
 		for (const service in this.$services) {
-			if ((this.$services as any)[service].name === 'mysql') {
+			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service].connect().catch((error: Error) => {
 					console.log('Check ALL connection settings: ' + error.message, JSON.stringify((error as any).stack));
 				}));
@@ -39,7 +52,7 @@ export default class Mysql<T extends GlobalsType> extends Middleware<T> {
 		// stop DB connections to all mysql services
 		const services: Promise<any>[] = [];
 		for (const service in this.$services) {
-			if ((this.$services as any)[service].name === 'mysql') {
+			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service].end().catch((error: Error) => {
 					console.log('Check ALL connection settings: ' + error.message, JSON.stringify((error as any).stack));
 				}));

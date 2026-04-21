@@ -17,6 +17,7 @@ import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 export default class ModelDynamo<T extends GlobalsType> extends Core<T> {
 
 	public dbname: string;
+	public serviceName: string;
 	public params: {
 		TableName: string;
 		KeySchema: Array<{ AttributeName: string; KeyType: 'HASH' | 'RANGE' }>;
@@ -32,12 +33,13 @@ export default class ModelDynamo<T extends GlobalsType> extends Core<T> {
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(globals: T, dbname: string, table: string, params?: any) {
+	constructor(globals: T, dbname: string, table: string, params?: any, serviceName = 'dynamo') {
 		super(globals);
 		
 		if (!table) throw new ModelError('table is required in params for dynamo db connection');
 
 		this.dbname = dbname;
+		this.serviceName = serviceName;
 		this.params = { ...{
 			TableName: table,
 			KeySchema: [
@@ -64,14 +66,14 @@ export default class ModelDynamo<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system
 	 * @return {any} Dynamo service
 	 */
-	get dynamo(): any { return (this.$services as any)['dynamo:' + this.dbname].dynamo }
+	get dynamo(): any { return (this.$services as any)[this.serviceName + ':' + this.dbname].dynamo }
 
 	/**
 	 * @public @get db
 	 * @desciption Get the services available to the system
 	 * @return {any} DynamoDB client
 	 */
-	get db(): any { return (this.$services as any)['dynamo:' + this.dbname].client }
+	get db(): any { return (this.$services as any)[this.serviceName + ':' + this.dbname].client }
 
 	/**
 	 * @public @method create

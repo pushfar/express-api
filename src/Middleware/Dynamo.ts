@@ -11,6 +11,18 @@ import { GlobalsType } from '../Types/System';
  */
 export default class Dynamo<T extends GlobalsType> extends Middleware<T> {
 
+	public name: string;
+
+	/**
+	 * @public @method constructor
+	 * @description Base method when instantiating class
+	 */
+	constructor(globals: T, name = 'dynamo') {
+		super(globals);
+
+		this.name = name;
+	}
+
 	/**
 	 * @public @method start
 	 * @description Invoke middleware for incoming request
@@ -20,7 +32,7 @@ export default class Dynamo<T extends GlobalsType> extends Middleware<T> {
 		// start DB connections to all dynamo services
 		const services: any[] = [];
 		for (const service in this.$services) {
-			if ((this.$services as any)[service].name === 'dynamo') {
+			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service]);
 			}
 		}

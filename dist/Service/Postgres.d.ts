@@ -19,6 +19,6 @@ export default class Postgres extends Client {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host: string, port: number, database: string, user: string, password: string, ssl?: any, connectionTimeoutMillis?: number);
+    constructor(host: string, port: number, database: string, user: string, password: string, ssl?: any, connectionTimeoutMillis?: number, name?: string);
 }
 //# sourceMappingURL=Postgres.d.ts.map

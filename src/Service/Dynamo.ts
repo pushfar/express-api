@@ -26,7 +26,7 @@ export default class Dynamo {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host: string, port: number, db: string, key: string, secret: string, region: string) {
+    constructor(host: string, port: number, db: string, key: string, secret: string, region: string, name = 'dynamo') {
         // create dynamo client
         this.dynamo = new DynamoDBClient({
             region: region,
@@ -40,8 +40,8 @@ export default class Dynamo {
         // create document client
         this.client = DynamoDBDocumentClient.from(this.dynamo);
 
-        this.name = 'dynamo';
-        this.service = 'dynamo:' + db;
+        this.name = name;
+        this.service = name + ':' + db;
         this.host = host;
         this.port = port;
         this.db = db;

@@ -20,6 +20,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
     columns?: {
         [key: string]: any;
     };
+    serviceName: string;
     /**
      * @public @method constructor
      * @description Base method when instantiating class
@@ -30,7 +31,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
         createdCol?: string;
         updatedCol?: string;
         deleteCol?: string;
-    });
+    }, serviceName?: string);
     /**
      * @public @get db
      * @desciption Get the services available to the system via the database

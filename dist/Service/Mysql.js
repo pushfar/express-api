@@ -14,12 +14,12 @@ export default class Mysql {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host, port, db, user, password) {
+    constructor(host, port, db, user, password, name = 'mysql') {
         // create mysql2
         this.mysql = mysql2;
         // cache
-        this.name = 'mysql';
-        this.service = 'mysql:' + db;
+        this.name = name;
+        this.service = name + ':' + db;
         this.host = host;
         this.port = port;
         this.db = db;

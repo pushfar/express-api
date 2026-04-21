@@ -9,6 +9,14 @@ import Middleware from '../Base/Middleware.js';
  */
 export default class Amqp extends Middleware {
     /**
+     * @public @method constructor
+     * @description Base method when instantiating class
+     */
+    constructor(globals, name = 'amqp') {
+        super(globals);
+        this.name = name;
+    }
+    /**
      * @public @method start
      * @description Invoke middleware for incoming request
      * @param {Object} request The incoming request to API Gateway
@@ -17,7 +25,7 @@ export default class Amqp extends Middleware {
         // start DB connections to all amqp services
         const services = [];
         for (const service in this.$services) {
-            if (this.$services[service].name === 'amqp') {
+            if (this.$services[service].name === this.name) {
                 services.push(this.$services[service].connect().catch((error) => {
                     console.log('Check ALL connection settings: ' + error.message, JSON.stringify(error.stack));
                 }));
@@ -34,7 +42,7 @@ export default class Amqp extends Middleware {
         // stop DB connections to all amqp services
         const services = [];
         for (const service in this.$services) {
-            if (this.$services[service].name === 'amqp') {
+            if (this.$services[service].name === this.name) {
                 services.push(this.$services[service].end().catch((error) => {
                     console.log('Check ALL connection settings: ' + error.message, JSON.stringify(error.stack));
                 }));

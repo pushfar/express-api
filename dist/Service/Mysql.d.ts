@@ -1,4 +1,4 @@
-import mysql2 from 'mysql2/promise';
+import mysql2, { type Connection } from 'mysql2/promise';
 /**
  * @module express-api/Service/Mysql
  * @class Mysql
@@ -15,14 +15,14 @@ export default class Mysql {
     port: number;
     db: string;
     mysql: typeof mysql2;
-    con: any;
+    con: Connection;
     private user?;
     private password?;
     /**
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host: string, port: number, db: string, user: string, password: string);
+    constructor(host: string, port: number, db: string, user: string, password: string, name?: string);
     connect(): Promise<void>;
     end(): Promise<void>;
 }

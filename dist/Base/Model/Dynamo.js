@@ -17,11 +17,12 @@ export default class ModelDynamo extends Core {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(globals, dbname, table, params) {
+    constructor(globals, dbname, table, params, serviceName = 'dynamo') {
         super(globals);
         if (!table)
             throw new ModelError('table is required in params for dynamo db connection');
         this.dbname = dbname;
+        this.serviceName = serviceName;
         this.params = { ...{
                 TableName: table,
                 KeySchema: [
@@ -47,13 +48,13 @@ export default class ModelDynamo extends Core {
      * @desciption Get the services available to the system
      * @return {any} Dynamo service
      */
-    get dynamo() { return this.$services['dynamo:' + this.dbname].dynamo; }
+    get dynamo() { return this.$services[this.serviceName + ':' + this.dbname].dynamo; }
     /**
      * @public @get db
      * @desciption Get the services available to the system
      * @return {any} DynamoDB client
      */
-    get db() { return this.$services['dynamo:' + this.dbname].client; }
+    get db() { return this.$services[this.serviceName + ':' + this.dbname].client; }
     /**
      * @public @method create
      * @description Create a new table resource
