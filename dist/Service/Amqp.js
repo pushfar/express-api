@@ -14,12 +14,12 @@ export default class Amqp {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(alias, host, port, user, password) {
+    constructor(alias, host, port, user, password, name = 'amqp') {
         // cache amqplib
         this.amqp = amqp;
         // cache
-        this.name = 'amqp';
-        this.service = 'amqp:' + alias;
+        this.name = name;
+        this.service = name + ':' + alias;
         this.alias = alias;
         this.host = host;
         this.port = port;

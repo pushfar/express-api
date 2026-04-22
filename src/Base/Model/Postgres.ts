@@ -22,12 +22,12 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	public updatedCol: string;
 	public deleteCol: string;
 	public columns?: { [key: string]: any };
-
+	public serviceName: string;
 	/**
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }) {
+	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }, serviceName = 'postgres') {
 		super(globals);
 
 		this.dbname = dbname;
@@ -37,6 +37,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 		this.createdCol = params?.createdCol || 'created';
 		this.updatedCol = params?.updatedCol || 'updated';
 		this.deleteCol = params?.deleteCol || 'deleted';
+		this.serviceName = serviceName;
 	}
 
 	/**
@@ -44,7 +45,7 @@ export default class ModelPG<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system via the database
 	 * @return {Client} The PG Client via node-pg
 	 */
-	get db(): Client { return (this.$services as any)['postgres:' + this.dbname] }
+	get db(): Client { return (this.$services as any)[this.serviceName + ':' + this.dbname] }
 
 	/**
 	 * @public notSoftDeleted

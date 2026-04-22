@@ -22,12 +22,13 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	public updatedCol: string;
 	public deleteCol: string;
 	public columns?: { [key: string]: any };
+	public serviceName: string;
 
 	/**
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }) {
+	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string}, serviceName = 'mysql') {
 		super(globals);
 
 		this.dbname = !table ? (this.$environment as any)?.MYSQL_DATABASE || dbname : dbname;
@@ -37,6 +38,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 		this.createdCol = params?.createdCol || 'created';
 		this.updatedCol = params?.updatedCol || 'updated';
 		this.deleteCol = params?.deleteCol || 'deleted';
+		this.serviceName = serviceName;
 	}
 
 	/**
@@ -44,7 +46,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system
 	 * @return {any} MySQL connection
 	 */
-	get db(): Mysql['con'] { return (this.$services as any)['mysql:' + this.dbname].con }
+	get db(): Mysql['con'] { return (this.$services as any)[this.serviceName + ':' + this.dbname].con }
 
 	/**
 	 * @public notSoftDeleted
@@ -174,9 +176,9 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 */
 	delete(id: string | number, type?: string | undefined): Promise<void> {
 		// soft delete off and not explicitly soft, or explicitly hard
-		if ((!this.softDelete && type !== 'soft') || type === 'hard') return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = ?;`, [id]);
+		if ((!this.softDelete && type !== 'soft') || type === 'hard') return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = ?;`, [id]).then(() => undefined);
 
-		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [new Date(), id]);
+		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [new Date(), id]).then(() => undefined);
 	}
 
 	/**
@@ -186,7 +188,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @return {Promise} a resulting promise of data or error on failure
 	 */
 	restore(id: string | number): Promise<void> {
-		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [null, id]);
+		return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [null, id]).then(() => undefined);
 	}
 
 	/**

@@ -10,6 +10,17 @@ import { GlobalsType } from '../Types/System';
  * @license MIT
  */
 export default class Postgres<T extends GlobalsType> extends Middleware<T> {
+	public name: string;
+
+	/**
+	 * @public @method constructor
+	 * @description Base method when instantiating class
+	 */
+	constructor(globals: T, name = 'postgres') {
+		super(globals);
+
+		this.name = name;
+	}
 
 	/**
 	 * @public @method start
@@ -20,7 +31,7 @@ export default class Postgres<T extends GlobalsType> extends Middleware<T> {
 		// start DB connections to all postgres services
 		const services: Promise<any>[] = [];
 		for (const service in this.$services) {
-			if ((this.$services as any)[service].name === 'postgres') {
+			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service].connect().catch((error: Error) => {
 					console.log('Check ALL connection settings: ' + error.message, JSON.stringify((error as any).stack));
 				}));
@@ -39,7 +50,7 @@ export default class Postgres<T extends GlobalsType> extends Middleware<T> {
 		// stop DB connections to all postgres services
 		const services: Promise<any>[] = [];
 		for (const service in this.$services) {
-			if ((this.$services as any)[service].name === 'postgres') {
+			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service].end().catch((error: Error) => {
 					console.log('Check ALL connection settings: ' + error.message, JSON.stringify((error as any).stack));
 				}));

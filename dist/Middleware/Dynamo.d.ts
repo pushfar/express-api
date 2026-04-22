@@ -9,6 +9,12 @@ import { GlobalsType } from '../Types/System.js';
  * @license MIT
  */
 export default class Dynamo<T extends GlobalsType> extends Middleware<T> {
+    name: string;
+    /**
+     * @public @method constructor
+     * @description Base method when instantiating class
+     */
+    constructor(globals: T, name?: string);
     /**
      * @public @method start
      * @description Invoke middleware for incoming request

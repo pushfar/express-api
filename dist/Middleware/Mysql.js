@@ -9,6 +9,15 @@ import Middleware from '../Base/Middleware.js';
  */
 export default class Mysql extends Middleware {
     /**
+     * @public @method constructor
+     * @description Base method when instantiating class
+     */
+    constructor(globals, name = 'mysql') {
+        super(globals);
+        // create mysql2
+        this.name = name;
+    }
+    /**
      * @public @method start
      * @description Invoke middleware for incoming request
      * @param {Object} request The incoming request to API Gateway
@@ -17,7 +26,7 @@ export default class Mysql extends Middleware {
         // start DB connections to all mysql services
         const services = [];
         for (const service in this.$services) {
-            if (this.$services[service].name === 'mysql') {
+            if (this.$services[service].name === this.name) {
                 services.push(this.$services[service].connect().catch((error) => {
                     console.log('Check ALL connection settings: ' + error.message, JSON.stringify(error.stack));
                 }));
@@ -34,7 +43,7 @@ export default class Mysql extends Middleware {
         // stop DB connections to all mysql services
         const services = [];
         for (const service in this.$services) {
-            if (this.$services[service].name === 'mysql') {
+            if (this.$services[service].name === this.name) {
                 services.push(this.$services[service].end().catch((error) => {
                     console.log('Check ALL connection settings: ' + error.message, JSON.stringify(error.stack));
                 }));

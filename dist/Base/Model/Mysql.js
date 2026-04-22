@@ -14,7 +14,7 @@ export default class ModelMysql extends Core {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(globals, dbname, table, params) {
+    constructor(globals, dbname, table, params, serviceName = 'mysql') {
         super(globals);
         this.dbname = !table ? this.$environment?.MYSQL_DATABASE || dbname : dbname;
         this.table = !table ? dbname : table;
@@ -23,13 +23,14 @@ export default class ModelMysql extends Core {
         this.createdCol = params?.createdCol || 'created';
         this.updatedCol = params?.updatedCol || 'updated';
         this.deleteCol = params?.deleteCol || 'deleted';
+        this.serviceName = serviceName;
     }
     /**
      * @public @get db
      * @desciption Get the services available to the system
      * @return {any} MySQL connection
      */
-    get db() { return this.$services['mysql:' + this.dbname].con; }
+    get db() { return this.$services[this.serviceName + ':' + this.dbname].con; }
     /**
      * @public notSoftDeleted
      * @desciption Get insertable for soft delete check
@@ -150,8 +151,8 @@ export default class ModelMysql extends Core {
     delete(id, type) {
         // soft delete off and not explicitly soft, or explicitly hard
         if ((!this.softDelete && type !== 'soft') || type === 'hard')
-            return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = ?;`, [id]);
-        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [new Date(), id]);
+            return this.db.query(`DELETE FROM ${this.inject(this.table)} WHERE id = ?;`, [id]).then(() => undefined);
+        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [new Date(), id]).then(() => undefined);
     }
     /**
      * @public @method restore
@@ -160,7 +161,7 @@ export default class ModelMysql extends Core {
      * @return {Promise} a resulting promise of data or error on failure
      */
     restore(id) {
-        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [null, id]);
+        return this.db.query(`UPDATE ${this.inject(this.table)} SET ${this.inject(this.deleteCol)} = ? WHERE ${this.inject(this.idCol)} = ?;`, [null, id]).then(() => undefined);
     }
     /**
      * @public @method queryWhere

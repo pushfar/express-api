@@ -22,7 +22,7 @@ export default class Amqp {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(alias: string, host: string, port: number, user: string, password: string);
+    constructor(alias: string, host: string, port: number, user: string, password: string, name?: string);
     connect(): Promise<void>;
     end(): Promise<void>;
 }

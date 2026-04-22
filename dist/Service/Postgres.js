@@ -14,7 +14,7 @@ export default class Postgres extends Client {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host, port, database, user, password, ssl, connectionTimeoutMillis) {
+    constructor(host, port, database, user, password, ssl, connectionTimeoutMillis, name = 'postgres') {
         const timeout = connectionTimeoutMillis || 20000;
         // create client
         super({
@@ -27,8 +27,8 @@ export default class Postgres extends Client {
             connectionTimeoutMillis: timeout
         });
         // cache
-        this.name = 'postgres';
-        this.service = 'postgres:' + database;
+        this.name = name;
+        this.service = name + ':' + database;
         this.host = host;
         this.port = port;
         this.db = database;

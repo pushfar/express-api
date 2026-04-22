@@ -1,5 +1,5 @@
 // @ts-ignore - Optional peer dependency
-import mysql2 from 'mysql2/promise';
+import mysql2, { type Connection} from 'mysql2/promise';
 
 /**
  * @module express-api/Service/Mysql
@@ -18,7 +18,7 @@ export default class Mysql {
 	public port: number;
 	public db: string;
 	public mysql: typeof mysql2;
-	public con: any;
+	public con!: Connection;
 	private user?: string;
 	private password?: string;
 
@@ -26,13 +26,13 @@ export default class Mysql {
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(host: string, port: number, db: string, user: string, password: string) {
+	constructor(host: string, port: number, db: string, user: string, password: string, name = 'mysql') {
 		// create mysql2
 		this.mysql = mysql2;
 
 		// cache
-		this.name = 'mysql';
-		this.service = 'mysql:' + db;
+		this.name = name;
+		this.service = name + ':' + db;
 		this.host = host;
 		this.port = port;
 		this.db = db;

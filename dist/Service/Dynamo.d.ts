@@ -21,6 +21,6 @@ export default class Dynamo {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(host: string, port: number, db: string, key: string, secret: string, region: string);
+    constructor(host: string, port: number, db: string, key: string, secret: string, region: string, name?: string);
 }
 //# sourceMappingURL=Dynamo.d.ts.map
