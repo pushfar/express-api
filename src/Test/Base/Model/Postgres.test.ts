@@ -70,6 +70,50 @@ describe('ModelPG', () => {
 		});
 	});
 
+	describe('init', () => {
+		it('should update model properties when called after construction', () => {
+			const model = new TestPGModel(mockGlobals);
+			model.init('otherdb', 'schema.other_table', { softDelete: true, idCol: 'uuid' });
+
+			expect(model.dbname).toBe('otherdb');
+			expect(model.table).toBe('schema.other_table');
+			expect(model.softDelete).toBe(true);
+			expect(model.idCol).toBe('uuid');
+		});
+
+		it('should reset to defaults when called with no args', () => {
+			const model = new TestPGModel(mockGlobals);
+			model.init();
+
+			expect(model.dbname).toBe('');
+			expect(model.table).toBe('');
+			expect(model.idCol).toBe('id');
+			expect(model.createdCol).toBe('created');
+			expect(model.softDelete).toBeUndefined();
+		});
+
+		it('should be overridable in a subclass', () => {
+			class CustomPGModel extends ModelPG<GlobalsType> {
+				constructor(globals: GlobalsType) {
+					super(globals);
+				}
+				init() {
+					this.dbname = 'custom';
+					this.table = 'custom_table';
+					this.idCol = 'custom_id';
+					this.createdCol = 'created';
+					this.updatedCol = 'updated';
+					this.deleteCol = 'deleted';
+				}
+			}
+
+			const model = new CustomPGModel(mockGlobals);
+			expect(model.dbname).toBe('custom');
+			expect(model.table).toBe('custom_table');
+			expect(model.idCol).toBe('custom_id');
+		});
+	});
+
 	describe('getters', () => {
 		it('should return db service via db getter', () => {
 			const model = new TestPGModel(mockGlobals);

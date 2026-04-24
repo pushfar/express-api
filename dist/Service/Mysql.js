@@ -40,6 +40,8 @@ export default class Mysql {
         });
     }
     end() {
+        if (this.con == null)
+            return Promise.resolve();
         return this.con.end();
     }
 }

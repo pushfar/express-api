@@ -18,7 +18,7 @@ export default class Mysql {
 	public port: number;
 	public db: string;
 	public mysql: typeof mysql2;
-	public con!: Connection;
+	public con?: Connection;
 	private user?: string;
 	private password?: string;
 
@@ -55,6 +55,7 @@ export default class Mysql {
 	}
 
 	end(): Promise<void> {
+		if (this.con == null) return Promise.resolve();
 		return this.con.end();
 	}
 }

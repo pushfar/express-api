@@ -76,7 +76,7 @@ describe('Postgres', () => {
 			expect(result).toBe(request);
 		});
 
-		it('should handle connection errors gracefully', async () => {
+		it('should reject when a postgres connection fails', async () => {
 			const error = new Error('Connection failed');
 			const mockConnect = jest.fn<() => Promise<void>>().mockRejectedValue(error);
 
@@ -90,17 +90,15 @@ describe('Postgres', () => {
 			const postgres = new Postgres(mockGlobals);
 			const request = { method: 'GET', url: '/test' };
 
-			const result = await postgres.start(request);
-
+			await expect(postgres.start(request)).rejects.toThrow('Connection failed');
 			expect(mockConnect).toHaveBeenCalled();
 			expect(console.log).toHaveBeenCalledWith(
 				'Check ALL connection settings: ' + error.message,
 				expect.any(String)
 			);
-			expect(result).toBe(request);
 		});
 
-		it('should handle multiple services with mixed success and errors', async () => {
+		it('should reject when one of multiple postgres connections fails', async () => {
 			const mockConnect1 = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
 			const error = new Error('Connection failed');
 			const mockConnect2 = jest.fn<() => Promise<void>>().mockRejectedValue(error);
@@ -119,11 +117,9 @@ describe('Postgres', () => {
 			const postgres = new Postgres(mockGlobals);
 			const request = { method: 'GET', url: '/test' };
 
-			const result = await postgres.start(request);
-
+			await expect(postgres.start(request)).rejects.toThrow('Connection failed');
 			expect(mockConnect1).toHaveBeenCalled();
 			expect(mockConnect2).toHaveBeenCalled();
-			expect(result).toBe(request);
 		});
 	});
 
