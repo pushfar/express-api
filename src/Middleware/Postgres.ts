@@ -34,6 +34,7 @@ export default class Postgres<T extends GlobalsType> extends Middleware<T> {
 			if ((this.$services as any)[service].name === this.name) {
 				services.push((this.$services as any)[service].connect().catch((error: Error) => {
 					console.log('Check ALL connection settings: ' + error.message, JSON.stringify((error as any).stack));
+					throw error;
 				}));
 			}
 		}

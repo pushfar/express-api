@@ -81,6 +81,11 @@ describe('Mysql', () => {
 	});
 
 	describe('end', () => {
+		it('should be a no-op when no connection was created', async () => {
+			const mysql = new Mysql('localhost', 3306, 'testdb', 'user', 'password');
+			await expect(mysql.end()).resolves.toBeUndefined();
+		});
+
 		it('should close connection', async () => {
 			const mysql = new Mysql('localhost', 3306, 'testdb', 'user', 'password');
 			const mockEnd = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);

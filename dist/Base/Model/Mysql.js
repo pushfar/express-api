@@ -16,21 +16,41 @@ export default class ModelMysql extends Core {
      */
     constructor(globals, dbname, table, params, serviceName = 'mysql') {
         super(globals);
-        this.dbname = !table ? this.$environment?.MYSQL_DATABASE || dbname : dbname;
-        this.table = !table ? dbname : table;
+        this.dbname = '';
+        this.table = '';
+        this.idCol = '';
+        this.createdCol = '';
+        this.updatedCol = '';
+        this.deleteCol = '';
+        this.serviceName = serviceName;
+        this.init(dbname, table, params);
+    }
+    /**
+     * @public @method init
+     * @description Initialize the model
+     * @param {Object} params The parameters to initialize the model with
+     * @return {Promise} a resulting promise of data or error on failure
+     */
+    init(dbname, table, params) {
+        this.dbname = !table ? this.$environment?.MYSQL_DATABASE || dbname || '' : dbname || '';
+        this.table = !table ? dbname || '' : table || '';
         this.softDelete = params?.softDelete;
         this.idCol = params?.idCol || 'id';
         this.createdCol = params?.createdCol || 'created';
         this.updatedCol = params?.updatedCol || 'updated';
         this.deleteCol = params?.deleteCol || 'deleted';
-        this.serviceName = serviceName;
     }
     /**
      * @public @get db
      * @desciption Get the services available to the system
      * @return {any} MySQL connection
      */
-    get db() { return this.$services[this.serviceName + ':' + this.dbname].con; }
+    get db() {
+        const connection = this.$services[this.serviceName + ':' + this.dbname].con;
+        if (!connection)
+            throw new ModelError(`MySQL connection is not available for service [${this.serviceName}:${this.dbname}]`);
+        return connection;
+    }
     /**
      * @public notSoftDeleted
      * @desciption Get insertable for soft delete check

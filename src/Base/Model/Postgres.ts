@@ -14,30 +14,42 @@ import { Client } from 'pg';
  */
 export default class ModelPG<T extends GlobalsType> extends Core<T> {
 
-	public dbname: string;
-	public table: string;
+	public dbname: string = '';
+	public table: string = '';
 	public softDelete?: boolean;
-	public idCol: string;
-	public createdCol: string;
-	public updatedCol: string;
-	public deleteCol: string;
+	public idCol: string = '';
+	public createdCol: string = '';
+	public updatedCol: string = '';
+	public deleteCol: string = '';
 	public columns?: { [key: string]: any };
 	public serviceName: string;
+
 	/**
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }, serviceName = 'postgres') {
+	constructor(globals: T, dbname?: string, table?: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }, serviceName = 'postgres') {
 		super(globals);
 
-		this.dbname = dbname;
-		this.table = table;
+		this.serviceName = serviceName;
+		this.init(dbname, table, params);
+	}
+
+	/**
+	 * @public @method init
+	 * @description Initialize the model
+	 * @param {String} dbname The database name
+	 * @param {String} table The table name
+	 * @param {Object} params Optional column configuration
+	 */
+	init(dbname?: string, table?: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string }) {
+		this.dbname = dbname || '';
+		this.table = table || '';
 		this.softDelete = params?.softDelete;
 		this.idCol = params?.idCol || 'id';
 		this.createdCol = params?.createdCol || 'created';
 		this.updatedCol = params?.updatedCol || 'updated';
 		this.deleteCol = params?.deleteCol || 'deleted';
-		this.serviceName = serviceName;
 	}
 
 	/**

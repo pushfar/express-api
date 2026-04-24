@@ -1,6 +1,6 @@
 import Core from '../../System/Core.js';
 import { GlobalsType } from '../../Types/System.js';
-import Mysql from '../../Service/Mysql.js';
+import { Connection } from 'mysql2/promise';
 /**
  * @module express-api/Base/Model/Mysql
  * @class ModelMysql
@@ -25,7 +25,7 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
      * @public @method constructor
      * @description Base method when instantiating class
      */
-    constructor(globals: T, dbname: string, table: string, params?: {
+    constructor(globals: T, dbname?: string, table?: string, params?: {
         softDelete?: boolean;
         idCol?: string;
         createdCol?: string;
@@ -33,11 +33,24 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
         deleteCol?: string;
     }, serviceName?: string);
     /**
+     * @public @method init
+     * @description Initialize the model
+     * @param {Object} params The parameters to initialize the model with
+     * @return {Promise} a resulting promise of data or error on failure
+     */
+    init(dbname?: string, table?: string, params?: {
+        softDelete?: boolean;
+        idCol?: string;
+        createdCol?: string;
+        updatedCol?: string;
+        deleteCol?: string;
+    }): void;
+    /**
      * @public @get db
      * @desciption Get the services available to the system
      * @return {any} MySQL connection
      */
-    get db(): Mysql['con'];
+    get db(): Connection;
     /**
      * @public notSoftDeleted
      * @desciption Get insertable for soft delete check

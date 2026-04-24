@@ -19,28 +19,32 @@ export default class ModelDynamo extends Core {
      */
     constructor(globals, dbname, table, params, serviceName = 'dynamo') {
         super(globals);
-        if (!table)
-            throw new ModelError('table is required in params for dynamo db connection');
-        this.dbname = dbname;
+        this.dbname = '';
+        this.params = {
+            TableName: '',
+            KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+            AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
+            ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 }
+        };
         this.serviceName = serviceName;
+        this.init(dbname, table, params);
+    }
+    /**
+     * @public @method init
+     * @description Initialize the model
+     * @param {String} dbname The database name
+     * @param {String} table The table name
+     * @param {Object} params Optional DynamoDB table configuration overrides
+     */
+    init(dbname, table, params) {
+        if (dbname && !table)
+            throw new ModelError('table is required in params for dynamo db connection');
+        this.dbname = dbname || '';
         this.params = { ...{
-                TableName: table,
-                KeySchema: [
-                    {
-                        AttributeName: "id",
-                        KeyType: "HASH"
-                    }
-                ],
-                AttributeDefinitions: [
-                    {
-                        AttributeName: "id",
-                        AttributeType: "S"
-                    }
-                ],
-                ProvisionedThroughput: {
-                    ReadCapacityUnits: 10,
-                    WriteCapacityUnits: 10
-                }
+                TableName: table || '',
+                KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+                AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
+                ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 }
             }, ...(params || {}) };
     }
     /**

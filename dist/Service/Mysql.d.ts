@@ -15,7 +15,7 @@ export default class Mysql {
     port: number;
     db: string;
     mysql: typeof mysql2;
-    con: Connection;
+    con?: Connection;
     private user?;
     private password?;
     /**

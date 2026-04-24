@@ -102,7 +102,24 @@ export default class Application {
         let request = new Request(this.globals, this._type, this.request);
         let requests = request.requests || [request];
         // run middleware before anything mounted or checked
-        requests = await this._middleware.start.reduce((p, mw) => p.then((r) => mw.start(r)), Promise.resolve(requests));
+        try {
+            requests = await this._middleware.start.reduce((p, mw) => p.then((r) => mw.start(r)), Promise.resolve(requests));
+        }
+        catch (error) {
+            console.error('Middleware start failed:', error);
+            return Promise.resolve((new Response(this._type, {
+                status: 503,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': this.request && this.request.headers && this.request.headers.Origin ? this.request.headers.Origin : '*',
+                    'Access-Control-Allow-Credentials': 'true',
+                    'Access-Control-Allow-Headers': 'Accept, Cache-Control, Content-Type, Content-Length, Authorization, Pragma, Expires',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+                    'Access-Control-Expose-Headers': 'Cache-Control, Content-Type, Authorization, Pragma, Expires'
+                },
+                body: { message: 'Service unavailable', detail: error.message || 'Middleware start failed' }
+            })).get()).then((res) => this._middleware.end.reduce((p, mw) => p.then((r) => mw.end(r)), Promise.resolve()).then(() => res));
+        }
         if (this.request.socket)
             this.globals.$socket = this.request.socket;
         if (this.request.io)

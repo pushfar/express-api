@@ -82,6 +82,49 @@ describe('ModelDynamo', () => {
 		});
 	});
 
+	describe('init', () => {
+		it('should update model properties when called after construction', () => {
+			const model = new TestDynamoModel(mockGlobals);
+			model.init('testdb', 'other_table');
+
+			expect(model.dbname).toBe('testdb');
+			expect(model.params.TableName).toBe('other_table');
+		});
+
+		it('should throw when dbname is set but table is not', () => {
+			const model = new TestDynamoModel(mockGlobals);
+			expect(() => model.init('testdb', '')).toThrow('table is required in params for dynamo db connection');
+		});
+
+		it('should allow no-arg call for uninitialised subclass use', () => {
+			const model = new TestDynamoModel(mockGlobals);
+			model.init();
+			expect(model.dbname).toBe('');
+			expect(model.params.TableName).toBe('');
+		});
+
+		it('should be overridable in a subclass', () => {
+			class CustomDynamoModel extends ModelDynamo<GlobalsType> {
+				constructor(globals: GlobalsType) {
+					super(globals);
+				}
+				init() {
+					this.dbname = 'custom';
+					this.params = {
+						TableName: 'custom_table',
+						KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' as const }],
+						AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' as const }],
+						ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+					};
+				}
+			}
+
+			const model = new CustomDynamoModel(mockGlobals);
+			expect(model.dbname).toBe('custom');
+			expect(model.params.TableName).toBe('custom_table');
+		});
+	});
+
 	describe('getters', () => {
 		it('should return dynamo service via dynamo getter', () => {
 			const model = new TestDynamoModel(mockGlobals);

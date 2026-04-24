@@ -16,14 +16,30 @@ export default class ModelPG extends Core {
      */
     constructor(globals, dbname, table, params, serviceName = 'postgres') {
         super(globals);
-        this.dbname = dbname;
-        this.table = table;
+        this.dbname = '';
+        this.table = '';
+        this.idCol = '';
+        this.createdCol = '';
+        this.updatedCol = '';
+        this.deleteCol = '';
+        this.serviceName = serviceName;
+        this.init(dbname, table, params);
+    }
+    /**
+     * @public @method init
+     * @description Initialize the model
+     * @param {String} dbname The database name
+     * @param {String} table The table name
+     * @param {Object} params Optional column configuration
+     */
+    init(dbname, table, params) {
+        this.dbname = dbname || '';
+        this.table = table || '';
         this.softDelete = params?.softDelete;
         this.idCol = params?.idCol || 'id';
         this.createdCol = params?.createdCol || 'created';
         this.updatedCol = params?.updatedCol || 'updated';
         this.deleteCol = params?.deleteCol || 'deleted';
-        this.serviceName = serviceName;
     }
     /**
      * @public @get db

@@ -2,7 +2,7 @@ import Core from '../../System/Core';
 import ModelError from '../../Error/Model';
 import DataTools from '../../Library/DataTools';
 import { GlobalsType } from '../../Types/System';
-import Mysql from '../../Service/Mysql';
+import { Connection } from 'mysql2/promise';
 
 /**
  * @module express-api/Base/Model/Mysql
@@ -14,13 +14,13 @@ import Mysql from '../../Service/Mysql';
  */
 export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 
-	public dbname: string;
-	public table: string;
+	public dbname: string = '';
+	public table: string = '';
 	public softDelete?: boolean;
-	public idCol: string;
-	public createdCol: string;
-	public updatedCol: string;
-	public deleteCol: string;
+	public idCol: string = '';
+	public createdCol: string = '';
+	public updatedCol: string = '';
+	public deleteCol: string = '';
 	public columns?: { [key: string]: any };
 	public serviceName: string;
 
@@ -28,17 +28,27 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @public @method constructor
 	 * @description Base method when instantiating class
 	 */
-	constructor(globals: T, dbname: string, table: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string}, serviceName = 'mysql') {
+	constructor(globals: T, dbname?: string, table?: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string}, serviceName = 'mysql') {
 		super(globals);
+		
+		this.serviceName = serviceName;
+		this.init(dbname, table, params);
+	}
 
-		this.dbname = !table ? (this.$environment as any)?.MYSQL_DATABASE || dbname : dbname;
-		this.table = !table ? dbname : table;
+	/**
+	 * @public @method init
+	 * @description Initialize the model
+	 * @param {Object} params The parameters to initialize the model with
+	 * @return {Promise} a resulting promise of data or error on failure
+	 */
+	init(dbname?: string, table?: string, params?: { softDelete?: boolean; idCol?: string; createdCol?: string; updatedCol?: string; deleteCol?: string}) {
+		this.dbname = !table ? (this.$environment as any)?.MYSQL_DATABASE || dbname || '' : dbname || '';
+		this.table = !table ? dbname || '' : table || '';
 		this.softDelete = params?.softDelete;
 		this.idCol = params?.idCol || 'id';
 		this.createdCol = params?.createdCol || 'created';
 		this.updatedCol = params?.updatedCol || 'updated';
 		this.deleteCol = params?.deleteCol || 'deleted';
-		this.serviceName = serviceName;
 	}
 
 	/**
@@ -46,7 +56,11 @@ export default class ModelMysql<T extends GlobalsType> extends Core<T> {
 	 * @desciption Get the services available to the system
 	 * @return {any} MySQL connection
 	 */
-	get db(): Mysql['con'] { return (this.$services as any)[this.serviceName + ':' + this.dbname].con }
+	get db(): Connection {
+		const connection = (this.$services as any)[this.serviceName + ':' + this.dbname].con as Connection | undefined;
+		if (!connection) throw new ModelError(`MySQL connection is not available for service [${this.serviceName}:${this.dbname}]`);
+		return connection;
+	}
 
 	/**
 	 * @public notSoftDeleted
