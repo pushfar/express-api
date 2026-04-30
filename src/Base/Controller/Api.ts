@@ -21,6 +21,7 @@ export type Schema = {
  * @module express-api/Base/Controller/Api
  * @class Api
  * @extends Controller
+ * @deprecated Use ApiSwagger or ApiZod instead. This class will be removed in a future major version.
  * @description Base class to give an extension to system base class for creating API controllers
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
@@ -89,13 +90,14 @@ export default abstract class Api<T extends GlobalsType> extends Controller<T> {
 	 * @description Parse the response output, based on the schemaMethod passed in to remove data, require it and type check etc
 	 * @param data The response data to send out in a response
 	 * @param method The optional method to use if auto detection fails
+	 * @param statusCode The HTTP status code to use for selecting the response schema (defaults to 200)
 	 * @returns the resulting body data
 	 */
-	public parseOutput<T = any>(data: any, method?: 'get' | 'post' | 'put' | 'patch' | 'delete'): T {
+	public parseOutput<T = any>(data: any, method?: 'get' | 'post' | 'put' | 'patch' | 'delete', statusCode: number = 200): T {
 		try {
 			const m = method || this.getCallingMethod();
 			
-			return SchemaTools.parseOutput<T>(data, this.options()[m as keyof Schema], `${this.constructor.name}:${m}:${this.options()[m as keyof Schema]?.description || ''}`);
+			return SchemaTools.parseOutput<T>(data, this.options()[m as keyof Schema], `${this.constructor.name}:${m}:${this.options()[m as keyof Schema]?.description || ''}`, statusCode);
 		} catch (err: any) {
 			throw new RestError(err.message, 400);
 		}
@@ -114,8 +116,11 @@ export default abstract class Api<T extends GlobalsType> extends Controller<T> {
 			const stackLines = stack.split('\n');
 			for (let i = 2; i < Math.min(stackLines.length, 6); i++) {
 				const line = stackLines[i];
+				// Use word boundary so e.g. getCallingMethod is not mistaken for "get"
 				const methods: Array<'get' | 'post' | 'put' | 'patch' | 'delete'> = ['get', 'post', 'put', 'patch', 'delete'];
-				for (const method of methods) if (line.includes(`.${method}`) || line.includes(`.${method}(`)) return method;
+				for (const method of methods) {
+					if (new RegExp(`\\.${method}\\b`).test(line)) return method;
+				}
 			}
 		} catch {}
 

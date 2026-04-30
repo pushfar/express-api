@@ -12,6 +12,7 @@ export type Schema = {
  * @module express-api/Base/Controller/Service
  * @class Service
  * @extends Controller
+ * @deprecated Use ServiceSwagger or ServiceZod instead. This class will be removed in a future major version.
  * @description Base class to give an extension to system base class for creating service controllers
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
@@ -34,9 +35,10 @@ export default abstract class Service<T extends GlobalsType> extends Controller<
      * @public parseOutput
      * @description Parse the response output, based on the schemaMethod passed in to remove data, require it and type check etc
      * @param data The response data to send out in a response
+     * @param statusCode The HTTP status code to use for selecting the response schema (defaults to 200)
      * @returns the resulting body data
      */
-    parseOutput<T = any>(data: any): T;
+    parseOutput<T = any>(data: any, statusCode?: number): T;
 }
 export {};
 //# sourceMappingURL=Service.d.ts.map

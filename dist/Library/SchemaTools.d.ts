@@ -39,7 +39,7 @@ export default class SchemaTools {
      * @param schemaBlock The specific schema block from the controller schema to parse against
      * @returns the resulting body data
      */
-    static parseOutput<T = any>(data: any, schemaBlock?: SwaggerSchemaMethodType, debugMessage?: string): T;
+    static parseOutput<T = any>(data: any, schemaBlock?: SwaggerSchemaMethodType, debugMessage?: string, statusCode?: number): T;
     /**
      * @private static __check
      * @description Check parameter type against schema

@@ -18,6 +18,8 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 	private _controller: { [key: string]: any };
 	private _types: string[];
 	private _type: 'aws' | 'azure' | 'express' | 'socket';
+	private _path: string;
+	private _method: string;
 	private _pwd: string;
 	private _controllerDir: string;
 
@@ -30,6 +32,8 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 		this._middleware = { start: [], mount: [], in: [], out: [], end: []};
 		this._controller = {};
 		this._types = ['aws', 'azure', 'express', 'socket'];
+		this._path = '';
+		this._method = '';
 
 		if (this._types.indexOf(type) < 0) throw Error('Type does not exist, please add a type of request [' + this._types.join(', ') + ']');
 		this._type = type;
@@ -188,6 +192,10 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 				}
 				path = path.substring(0, path.length - 1) + '.js';
 
+				// set path and method for later use
+				this._path = path;
+				this._method = req.method;
+
 				try {
 					this._controller[name] = (this.globals.$handler?.type === 'es-module' ? Object.values(await import(this._controllerDir.replace(/(\/)+$/, '') + '/' + path))[0] : require(this._controllerDir.replace(/(\/)+$/, '') + '/' + path));
 					req.access = this._controller[name][req.method] || {};
@@ -241,6 +249,9 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 					})).get());
 				}
 
+				// make controller class available on client global
+				this.globals.$client.controller = this._controller[name];
+
 				// run middleware after mount of controller but before running it
 				req = await this._middleware.in.reduce((p: Promise<any>, mw: any) => p.then((r: any) => mw.in(r)), Promise.resolve(req));
 
@@ -248,23 +259,27 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 				return (new this._controller[name](this.globals))[req.method](req);
 			})
 
-			// handle response
-			.then((out) => new Response(this._type, {
+			// handle response as generic object
+			.then((out) => ({
 				isBase64Encoded: out && out.isBase64Encoded,
+				path: this._path || '',
+				method: this._method || '',
 				status: out && out.body && out.status ? out.status : 200,
 				headers: { ...{ 'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }, ...(out && out.body && out.headers ? out.headers : {}) },
-				body: out && out.body && out.status ? out.body : (out ? out : null)
+				body: out && out.body && out.status ? out.body : (out ? out : null),
 			}))
 			.catch((error: any) => {
 				// catch any other errors, log errors to console
 				if (!error.exception) console.warn(error.message, JSON.stringify(error.stack));
 
 				// other errors like model, service etc (custom)
-				return new Response(this._type, {
+				return {
+					path: 'unknown',
+					method: 'unknown',
 					status: ['error', 'typeerror'].includes(error.name.toLowerCase()) ? 500 : error.status || 400,
 					headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
 					body: error.name.toLowerCase() === 'resterror' ? error.message : (['error', 'typeerror'].includes(error.name.toLowerCase()) ? 'internal error' : error)
-				});
+				};
 			})
 			
 			// outgoing middleware, run synchronously as each one impacts on the next
@@ -276,12 +291,17 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 				if (!error.exception) console.warn(error.message, JSON.stringify(error.stack));
 
 				// other errors like model, service etc (custom)
-				return new Response(this._type, {
+				return {
+					path: 'unknown',
+					method: 'unknown',
 					status: error.name.toLowerCase() === 'error' ? 500 : error.status || 400,
 					headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
 					body: error.name.toLowerCase() === 'resterror' ? error.message : (error.name.toLowerCase() === 'error' ? 'system error' : error)
-				});
-			});
+				};
+			})
+
+			// convert to Response only at the end, after middleware has processed the generic object
+			.then((out) => new Response(this._type, out));
 	}
 }
 

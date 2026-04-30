@@ -17,6 +17,8 @@ export default class Response<T extends {
     body: any;
 }> {
     type: 'aws' | 'azure' | 'express' | 'socket';
+    path: string;
+    method: string;
     status: number;
     headers: T['headers'];
     body: T['body'];

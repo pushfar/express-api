@@ -10,6 +10,8 @@ import DataTools from '../Library/DataTools';
 export default class Response<T extends { headers: { [key: string]: string | string[] | undefined }, body: any } = { headers: { [key: string]: string | string[] | undefined }, body: any }> {
 	
 	public type: 'aws' | 'azure' | 'express' | 'socket';
+	public path!: string;
+	public method!: string;
 	public status!: number;
 	public headers!: T['headers'];
 	public body!: T['body'];

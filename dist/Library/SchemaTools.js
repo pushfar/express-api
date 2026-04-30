@@ -79,14 +79,14 @@ export default class SchemaTools {
      * @param schemaBlock The specific schema block from the controller schema to parse against
      * @returns the resulting body data
      */
-    static parseOutput(data, schemaBlock, debugMessage) {
+    static parseOutput(data, schemaBlock, debugMessage, statusCode = 200) {
         if (!schemaBlock)
             throw new Error('schemaBlock must be a valid schemaMethod or SwaggerSchemaObjectParameter, check your schema is correct');
-        const schemaResponse = schemaBlock.responses[200].content?.['application/json']?.schema;
+        const schemaResponse = schemaBlock.responses[statusCode]?.content?.['application/json']?.schema;
         if (!schemaResponse)
-            throw new Error('Cannot find a 200 response application/json schema');
+            throw new Error(`Cannot find a ${statusCode} response application/json schema`);
         if ('$ref' in schemaResponse)
-            throw new Error('Schema 200 response block is detected as a string, meaning its being pointed to a swagger schema object, this is not supported');
+            throw new Error(`Schema ${statusCode} response block is detected as a string, meaning its being pointed to a swagger schema object, this is not supported`);
         return SchemaTools.__check(schemaResponse, data, true, 'body', undefined, undefined, debugMessage);
     }
     /**

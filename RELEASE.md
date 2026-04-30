@@ -1,5 +1,12 @@
 # RELEASE
 
+## 1.1.0
+
+Added support for zod schemas to automatically generate OpenAPI schemas and support mcp services.
+Upgraded application to expose controller class to client.
+Exposed method and path to both request and response.
+Fixed bug with application not passing generic response to middleware, response is converted after all middleware has run.
+
 ## 1.0.4
 
 Add correct return type for mysql so generics can be used to infer return types.
