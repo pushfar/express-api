@@ -2,7 +2,7 @@ import { GlobalsType } from '../Types/System';
 import Middleware from '../Base/Middleware';
 import Request from '../System/Request';
 import Response from '../System/Response';
-import { v4 as uuidv4 } from 'uuid';
+import CryptoTools from '../Library/CryptoTools';
 
 /**
  * @namespace API/Middleware
@@ -32,7 +32,7 @@ export default class Correlation<T extends GlobalsType & { $client: { correlatio
 		// only generate correlation if we are an api
 		if (this.type !== 'api') return request;
 
-		this.$client.correlation = { id: uuidv4().toString(), userId: '', organisationId: '', impersonatorId: '' };
+		this.$client.correlation = { id: CryptoTools.generateUuid(), userId: '', organisationId: '', impersonatorId: '' };
 
 		return request;
 	}
