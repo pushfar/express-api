@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  * @copyright 2025 Pushfar (pushfar.com) all rights reserved
  * @license Unlicensed
  */
-export default class Correlation<T extends GlobalsType & { $client: { correlation: { id: string; userId: string; organisationId: string; impersonatorId: string } } }> extends Middleware<T> {
+export default class Correlation<T extends GlobalsType & { $client: { correlation: { id: string; userId?: string; organisationId?: string; impersonatorId?: string } } }> extends Middleware<T> {
 	private type: 'api' | 'service';
 
 	constructor(globals: T, type: 'api' | 'service') {

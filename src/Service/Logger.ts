@@ -15,7 +15,7 @@ import { z } from 'zod';
  * @copyright 2025 Pushfar (pushfar.com) all rights reserved
  * @license Unlicensed
  */
-export default class Logger<T extends GlobalsType & { $client: { correlation: { id: string; userId: string; organisationId: string; impersonatorId: string } } }> extends PushfarService<T> {
+export default class Logger<T extends GlobalsType & { $client: { correlation: { id: string; userId?: string; organisationId?: string; impersonatorId?: string } } }> extends PushfarService<T> {
 	public service: string = 'logger';
 	public newrelic: any;
 

@@ -13,7 +13,7 @@ import Logger from '../Service/Logger';
  * @copyright 2025 Pushfar (pushfar.com) all rights reserved
  * @license Unlicensed
  */
-export default class LogRequestResponse<T extends GlobalsType & { $services: { logger: Logger<T & { $client: { correlation: { id: string; userId: string; organisationId: string; impersonatorId: string } } }> } }> extends Middleware<T> {
+export default class LogRequestResponse<T extends GlobalsType & { $services: { logger: Logger<T & { $client: { correlation: { id: string; userId?: string; organisationId?: string; impersonatorId?: string } } }> } }> extends Middleware<T> {
 	/**
 	 * @public @method in
 	 * @description Invoke middleware for incomming event
