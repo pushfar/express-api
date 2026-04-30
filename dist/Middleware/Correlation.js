@@ -1,5 +1,5 @@
 import Middleware from '../Base/Middleware.js';
-import { v4 as uuidv4 } from 'uuid';
+import CryptoTools from '../Library/CryptoTools.js';
 /**
  * @namespace API/Middleware
  * @class Correlation
@@ -24,7 +24,7 @@ export default class Correlation extends Middleware {
         // only generate correlation if we are an api
         if (this.type !== 'api')
             return request;
-        this.$client.correlation = { id: uuidv4().toString(), userId: '', organisationId: '', impersonatorId: '' };
+        this.$client.correlation = { id: CryptoTools.generateUuid(), userId: '', organisationId: '', impersonatorId: '' };
         return request;
     }
     /**
