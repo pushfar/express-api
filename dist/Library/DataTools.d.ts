@@ -7,6 +7,20 @@
  */
 export default class DataTools {
     /**
+     * Parse a JSON string into a JavaScript object.
+     * @method parseJson
+     * @param raw The JSON string to parse
+     * @return The parsed JavaScript object, or null if the string is not valid JSON
+     */
+    static parseJson<T = unknown>(raw: unknown): T | undefined;
+    /**
+     * Convert a Date object or string to a MySQL-compatible datetime string (YYYY-MM-DD HH:MM:SS UTC).
+     * @method toDateTimeString
+     * @param val The value to convert
+     * @return The formatted string, or undefined if the value is null/undefined
+     */
+    static toDateTimeString(val: string | Date | null | undefined): string | undefined;
+    /**
      * @public @static @name checkType
      * @description Check properties match in two objects, to ensure they have the same properties in both
      * @param data The data to check

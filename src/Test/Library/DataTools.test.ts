@@ -1,6 +1,44 @@
 import DataTools from '../../Library/DataTools';
 
 describe('DataTools', () => {
+	describe('parseJson', () => {
+		it('returns undefined for nullish input', () => {
+			expect(DataTools.parseJson(null)).toBeUndefined();
+			expect(DataTools.parseJson(undefined)).toBeUndefined();
+		});
+
+		it('parses valid json strings', () => {
+			expect(DataTools.parseJson('{"a":1}')).toEqual({ a: 1 });
+			expect(DataTools.parseJson('[1,2,3]')).toEqual([1, 2, 3]);
+		});
+
+		it('returns undefined for invalid json strings', () => {
+			expect(DataTools.parseJson('{invalid}')).toBeUndefined();
+		});
+
+		it('returns non-string values unchanged', () => {
+			const obj = { a: 1 };
+			expect(DataTools.parseJson(obj)).toBe(obj);
+			expect(DataTools.parseJson(123)).toBe(123);
+		});
+	});
+
+	describe('toDateTimeString', () => {
+		it('returns undefined for nullish input', () => {
+			expect(DataTools.toDateTimeString(null)).toBeUndefined();
+			expect(DataTools.toDateTimeString(undefined)).toBeUndefined();
+		});
+
+		it('converts Date values to mysql-like datetime strings', () => {
+			const date = new Date('2023-01-02T03:04:05.000Z');
+			expect(DataTools.toDateTimeString(date)).toBe('2023-01-02 03:04:05');
+		});
+
+		it('returns input string unchanged', () => {
+			expect(DataTools.toDateTimeString('2023-01-01 00:00:00')).toBe('2023-01-01 00:00:00');
+		});
+	});
+
 	describe('checkType', () => {
 		describe('Basic types', () => {
 			it('should return true for valid boolean', () => {
