@@ -24,27 +24,35 @@ export default class Logger<T extends GlobalsType & {
 }> extends PushfarService<T> {
     service: string;
     newrelic: any;
+    pushToService: boolean;
+    /**
+     * @public @constructor
+     * @description Constructor for the Logger service
+     * @param globals The globals object
+     * @param pushToService Whether to push to the service
+     */
+    constructor(globals: T, pushToService?: boolean);
     /**
      * @public @async log
      * @description Error log function
      * @param type The type of error
      * @param title The title of the log
      * @param payload The payload to log
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     log(type: 'info' | 'warning' | 'error', title: string, payload?: {
         error?: Error;
         request?: Request;
         response?: Response;
         dump?: any;
-    }): Promise<unknown>;
+    }): Promise<void>;
     /**
      * @public @async logHandler
      * @description Log a request and response to the logger service
      * @param type The type of error
      * @param title The title of the log
      * @param payload The payload to log
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     logHandler(payload?: {
         request?: {
@@ -56,20 +64,20 @@ export default class Logger<T extends GlobalsType & {
         response?: Response;
         stream?: any;
         error?: Error;
-    }): Promise<unknown>;
+    }): Promise<void>;
     /**
      * @public @async logRequest
      * @description Log a request to the logger service
      * @param request The request object
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
-    logRequest(request: Request): Promise<unknown>;
+    logRequest(request: Request): Promise<void>;
     /**
      * @public @async logResponse
      * @description Log a response to the logger service
      * @param response The response object
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
-    logResponse(response: Response): Promise<unknown>;
+    logResponse(response: Response): Promise<void>;
 }
 //# sourceMappingURL=Logger.d.ts.map

@@ -11,9 +11,17 @@ import { z } from 'zod';
  * @license Unlicensed
  */
 export default class Logger extends PushfarService {
-    constructor() {
-        super(...arguments);
+    /**
+     * @public @constructor
+     * @description Constructor for the Logger service
+     * @param globals The globals object
+     * @param pushToService Whether to push to the service
+     */
+    constructor(globals, pushToService = true) {
+        super(globals);
         this.service = 'logger';
+        this.pushToService = true;
+        this.pushToService = pushToService;
     }
     /**
      * @public @async log
@@ -21,7 +29,7 @@ export default class Logger extends PushfarService {
      * @param type The type of error
      * @param title The title of the log
      * @param payload The payload to log
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     async log(type, title, payload) {
         const correlation = this.$client?.correlation || {};
@@ -46,9 +54,11 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type))
             console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
+        if (!this.pushToService)
+            return;
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).catch(() => { }); // do not let logging errors stop flow
+        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logHandler
@@ -56,7 +66,7 @@ export default class Logger extends PushfarService {
      * @param type The type of error
      * @param title The title of the log
      * @param payload The payload to log
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     async logHandler(payload) {
         const correlation = this.$client?.correlation || {};
@@ -81,15 +91,17 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type))
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
+        if (!this.pushToService)
+            return;
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).catch(() => { }); // do not let logging errors stop flow
+        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logRequest
      * @description Log a request to the logger service
      * @param request The request object
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     async logRequest(request) {
         const type = 'info';
@@ -107,15 +119,17 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type))
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
+        if (!this.pushToService)
+            return;
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).catch(() => { }); // do not let logging errors stop flow
+        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logResponse
      * @description Log a response to the logger service
      * @param response The response object
-     * @return Promise a resulting promise with an error to feed back or data to send on
+     * @return Promise void
      */
     async logResponse(response) {
         const type = response.status >= 500 ? 'error' : response.status >= 400 ? 'warning' : 'info';
@@ -134,9 +148,11 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type))
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
+        if (!this.pushToService)
+            return;
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).catch(() => { }); // do not let logging errors stop flow
+        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
 }
 //# sourceMappingURL=Logger.js.map
