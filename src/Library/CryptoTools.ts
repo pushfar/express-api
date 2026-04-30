@@ -1,10 +1,10 @@
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 
 /**
  * @module express-api/Library/Crypto
  * @class Crypto
- * @deprecated Use CryptoTools instead
  * @description Common resource element, functional only, providing crypto functionality
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT 
@@ -353,6 +353,75 @@ export default class Crypto {
 		let decoded = JWT.decode(decryptedToken, { complete: true }) as any;
 		if (decoded.payload.scope !== scope) throw Error('Unable to verify token scope');
 		return decoded.payload.key;
+	}
+	/**
+	 * Compare two bcrypt hashes
+	 * @method compareBcryptHash
+	 * @param stringOne The first bcrypt hash to compare
+	 * @param stringTwo The second bcrypt hash to compare
+	 * @return True if the hashes are the same, false otherwise
+	 */
+	static async compareBcryptHash(stringOne: string, stringTwo: string): Promise<boolean> {
+		// PHP used a slightly different format to Node, so we need to convert it to the same format
+		if (stringOne.trim().startsWith('$2y$')) stringOne = `$2a$${stringOne.slice(4)}`;
+		if (stringTwo.trim().startsWith('$2y$')) stringTwo = `$2a$${stringTwo.slice(4)}`;
+
+		return await bcrypt.compare(stringOne, stringTwo);
+	}
+
+	/**
+	 * Make a bcrypt hash from a plain text password
+	 * @method makeBcryptHash
+	 * @param plain The plain text password to hash
+	 * @param saltRounds The number of salt rounds to use
+	 * @return The bcrypt hash
+	 */
+	static async makeBcryptHash(plain: string, saltRounds: number = 13): Promise<string> {
+		if (plain == null || plain === '') throw new Error('Password must be a non-empty string');
+
+		const h = await bcrypt.hash(plain, saltRounds);
+
+		// PHP used a slightly different format to Node, so we need to convert it to the same format
+		if (h.startsWith('$2a$') || h.startsWith('$2b$')) return `$2y$${h.slice(4)}`;
+
+		return h;
+	}
+
+	/**
+	 * Generate a v4 UUID.
+	 * @method generateUuid
+	 * @return A newly generated UUID
+	 */
+	static generateUuid(): string {
+		return crypto.randomUUID();
+	}
+
+	/**
+	 * Generate a new, high-entropy API key. Only the hash is ever persisted; the plaintext
+	 * key is returned once to the caller and must not be stored server-side.
+	 *
+	 * Format: `pfid_<env>_<43-char base64url secret>` (~256 bits of entropy).
+	 * @method generateApiKey
+	 * @param env The environment tag embedded in the key (e.g. "live", "test")
+	 * @return The plaintext key, its displayable prefix, and its SHA-256 hash
+	 */
+	static generateApiKey(env: string = 'live'): { key: string; prefix: string; hash: string } {
+		const secret = crypto.randomBytes(32).toString('base64url');
+		const key = `pfid_${env}_${secret}`;
+		const prefix = key.slice(0, 16);
+		const hash = Crypto.hashApiKey(key);
+		return { key, prefix, hash };
+	}
+
+	/**
+	 * Hash an API key for lookup / comparison. SHA-256 is sufficient because keys are
+	 * high-entropy random strings (not user-chosen), so they are not brute-forceable.
+	 * @method hashApiKey
+	 * @param key The plaintext API key
+	 * @return The hex-encoded SHA-256 hash
+	 */
+	static hashApiKey(key: string): string {
+		return crypto.createHash('sha256').update(key).digest('hex');
 	}
 }
 

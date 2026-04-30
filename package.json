@@ -1,6 +1,6 @@
 {
 	"name": "@ulsmith/express-api",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "An MVC Stack for express js architectures.",
 	"homepage": "https://github.com/xxx/express-api#readme",
 	"bugs": {
@@ -36,10 +36,12 @@
 	},
 	"dependencies": {
 		"@asteasolutions/zod-to-openapi": "^8.5.0",
+		"bcrypt": "^6.0.0",
 		"jsonwebtoken": "^9.0.3",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
+		"@types/bcrypt": "^6.0.0",
 		"@types/jest": "^30.0.0",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^24.10.4",

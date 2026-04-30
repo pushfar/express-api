@@ -1,7 +1,6 @@
 /**
  * @module express-api/Library/Crypto
  * @class Crypto
- * @deprecated Use CryptoTools instead
  * @description Common resource element, functional only, providing crypto functionality
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
@@ -65,5 +64,49 @@ export default class Crypto {
      * @return {String} The key from in the token
      */
     static decodeToken(scope: string, token: string, JWTKey: string, AESKey: string): string;
+    /**
+     * Compare two bcrypt hashes
+     * @method compareBcryptHash
+     * @param stringOne The first bcrypt hash to compare
+     * @param stringTwo The second bcrypt hash to compare
+     * @return True if the hashes are the same, false otherwise
+     */
+    static compareBcryptHash(stringOne: string, stringTwo: string): Promise<boolean>;
+    /**
+     * Make a bcrypt hash from a plain text password
+     * @method makeBcryptHash
+     * @param plain The plain text password to hash
+     * @param saltRounds The number of salt rounds to use
+     * @return The bcrypt hash
+     */
+    static makeBcryptHash(plain: string, saltRounds?: number): Promise<string>;
+    /**
+     * Generate a v4 UUID.
+     * @method generateUuid
+     * @return A newly generated UUID
+     */
+    static generateUuid(): string;
+    /**
+     * Generate a new, high-entropy API key. Only the hash is ever persisted; the plaintext
+     * key is returned once to the caller and must not be stored server-side.
+     *
+     * Format: `pfid_<env>_<43-char base64url secret>` (~256 bits of entropy).
+     * @method generateApiKey
+     * @param env The environment tag embedded in the key (e.g. "live", "test")
+     * @return The plaintext key, its displayable prefix, and its SHA-256 hash
+     */
+    static generateApiKey(env?: string): {
+        key: string;
+        prefix: string;
+        hash: string;
+    };
+    /**
+     * Hash an API key for lookup / comparison. SHA-256 is sufficient because keys are
+     * high-entropy random strings (not user-chosen), so they are not brute-forceable.
+     * @method hashApiKey
+     * @param key The plaintext API key
+     * @return The hex-encoded SHA-256 hash
+     */
+    static hashApiKey(key: string): string;
 }
-//# sourceMappingURL=Crypto.d.ts.map
+//# sourceMappingURL=CryptoTools.d.ts.map
