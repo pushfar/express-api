@@ -1,5 +1,10 @@
 # RELEASE
 
+## 1.1.1
+
+Created new CryptoTools and deprecated Crypto.
+Created new DataTools, FileTools, Eval
+
 ## 1.1.0
 
 Added support for zod schemas to automatically generate OpenAPI schemas and support mcp services.
