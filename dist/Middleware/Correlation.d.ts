@@ -15,9 +15,9 @@ export default class Correlation<T extends GlobalsType & {
     $client: {
         correlation: {
             id: string;
-            userId: string;
-            organisationId: string;
-            impersonatorId: string;
+            userId?: string;
+            organisationId?: string;
+            impersonatorId?: string;
         };
     };
 }> extends Middleware<T> {

@@ -18,9 +18,9 @@ export default class LogRequestResponse<T extends GlobalsType & {
             $client: {
                 correlation: {
                     id: string;
-                    userId: string;
-                    organisationId: string;
-                    impersonatorId: string;
+                    userId?: string;
+                    organisationId?: string;
+                    impersonatorId?: string;
                 };
             };
         }>;
