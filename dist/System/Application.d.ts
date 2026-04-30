@@ -18,6 +18,8 @@ export default class Application<T extends GlobalsType & {
     private _controller;
     private _types;
     private _type;
+    private _path;
+    private _method;
     private _pwd;
     private _controllerDir;
     constructor(request: any, type?: 'aws' | 'azure' | 'express' | 'socket');

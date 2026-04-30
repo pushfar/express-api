@@ -16,6 +16,7 @@ export type Schema = {
  * @module express-api/Base/Controller/Api
  * @class Api
  * @extends Controller
+ * @deprecated Use ApiSwagger or ApiZod instead. This class will be removed in a future major version.
  * @description Base class to give an extension to system base class for creating API controllers
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
@@ -56,9 +57,10 @@ export default abstract class Api<T extends GlobalsType> extends Controller<T> {
      * @description Parse the response output, based on the schemaMethod passed in to remove data, require it and type check etc
      * @param data The response data to send out in a response
      * @param method The optional method to use if auto detection fails
+     * @param statusCode The HTTP status code to use for selecting the response schema (defaults to 200)
      * @returns the resulting body data
      */
-    parseOutput<T = any>(data: any, method?: 'get' | 'post' | 'put' | 'patch' | 'delete'): T;
+    parseOutput<T = any>(data: any, method?: 'get' | 'post' | 'put' | 'patch' | 'delete', statusCode?: number): T;
     /**
      * @protected getCallingMethod
      * @description Attempts to detect the calling method name from the call stack

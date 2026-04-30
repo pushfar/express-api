@@ -9,6 +9,7 @@ var SchemaMethods;
  * @module express-api/Base/Controller/Service
  * @class Service
  * @extends Controller
+ * @deprecated Use ServiceSwagger or ServiceZod instead. This class will be removed in a future major version.
  * @description Base class to give an extension to system base class for creating service controllers
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
@@ -32,11 +33,12 @@ export default class Service extends Controller {
      * @public parseOutput
      * @description Parse the response output, based on the schemaMethod passed in to remove data, require it and type check etc
      * @param data The response data to send out in a response
+     * @param statusCode The HTTP status code to use for selecting the response schema (defaults to 200)
      * @returns the resulting body data
      */
-    parseOutput(data) {
+    parseOutput(data, statusCode = 200) {
         try {
-            return SchemaTools.parseOutput(data, this.options().post, `${this.constructor.name}:post:${this.options().post?.description || ''}`);
+            return SchemaTools.parseOutput(data, this.options().post, `${this.constructor.name}:post:${this.options().post?.description || ''}`, statusCode);
         }
         catch (err) {
             throw new RestError(err.message, 400);

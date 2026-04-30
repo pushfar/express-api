@@ -111,7 +111,8 @@ describe('Service', () => {
 			expect(SchemaTools.parseOutput).toHaveBeenCalledWith(
 				{ data: 'test' },
 				service.options().post,
-				expect.stringContaining('TestService:post:')
+				expect.stringContaining('TestService:post:'),
+				200
 			);
 		});
 
