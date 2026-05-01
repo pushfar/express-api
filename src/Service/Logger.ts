@@ -59,7 +59,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
-			response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
+			response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
 			error: payload?.error?.message,
 			dump: payload?.dump,
 		};
