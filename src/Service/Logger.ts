@@ -51,7 +51,10 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		
 		// clean payload to remove circular references
 		const requestBody = ZodSchemaTools.redact(payload?.request?.body, this.$client?.controller?.zodSchema?.[payload?.request?.method || 'get']?.body ?? z.object({}));
-		const parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
+		let parsedResponseBody = payload?.response?.body;
+		try {
+			parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
+		} catch (_) {}
 		const responseBody = ZodSchemaTools.redact(
 			parsedResponseBody,
 			this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}),
@@ -100,7 +103,10 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		
 		// clean payload to remove circular references
 		const requestBody = ZodSchemaTools.redact(payload?.request?.body, this.$client?.controller?.zodSchema?.[payload?.request?.method || 'get']?.body ?? z.object({}));
-		const parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
+		let parsedResponseBody = payload?.response?.body;
+		try {
+			parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
+		} catch (_) {}
 		const responseBody = ZodSchemaTools.redact(
 			parsedResponseBody,
 			this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}),
@@ -173,7 +179,10 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const title = response.status >= 500 ? 'Response Error' : response.status >= 400 ? 'Response Warning' : 'Response Info';
 		const correlation = this.$client?.correlation || {};
 		
-		const parsedBody = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+		let parsedBody = response.body;
+		try {
+			parsedBody = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+		} catch (_) {}
 		const body = ZodSchemaTools.redact(parsedBody, this.$client?.controller?.zodSchema?.[response.method]?.response?.[response.status]?.schema ?? z.object({}));
 		const data = { response: { path: response.path, method: response.method, status: response.status, headers: response.headers, body } };
 		
