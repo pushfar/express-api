@@ -44,11 +44,11 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		type: 'info' | 'warning' | 'error',
 		title: string,
 		payload?: { error?: Error; request?: Request; response?: Response; dump?: any },
-	): Promise<void> {
+	): Promise<void> {		
 		const correlation = this.$client?.correlation || {};
 
 		if (payload?.dump) console.log(`\nLOGGER NOTICE: LOG DUMP DATA DETECTED - Ensure you redact any senstive data before logging dump data !!!`);
-
+		
 		// clean payload to remove circular references
 		const requestBody = ZodSchemaTools.redact(payload?.request?.body, this.$client?.controller?.zodSchema?.[payload?.request?.method || 'get']?.body ?? z.object({}));
 		const parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
@@ -56,21 +56,23 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 			parsedResponseBody,
 			this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}),
 		);
-
+		
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
 			response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
 			error: payload?.error?.message,
 			dump: payload?.dump,
 		};
-
+		
 		// console log if set
+		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
 		if (this.$environment.EAPI_LOGGING === 'all') console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'warning' && ['warning', 'error'].includes(type)) console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type)) console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
 
 		if (!this.pushToService) return;
+		if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL) return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);	
 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
@@ -95,7 +97,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const correlation = this.$client?.correlation || {};
 		const type = payload?.error ? 'error' : 'info';
 		const title = payload?.error ? 'Error' : 'Info';
-
+		
 		// clean payload to remove circular references
 		const requestBody = ZodSchemaTools.redact(payload?.request?.body, this.$client?.controller?.zodSchema?.[payload?.request?.method || 'get']?.body ?? z.object({}));
 		const parsedResponseBody = typeof payload?.response?.body === 'string' ? JSON.parse(payload.response.body) : payload?.response?.body;
@@ -103,22 +105,24 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 			parsedResponseBody,
 			this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}),
 		);
-
+		
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
 			response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
 			error: payload?.error?.message,
 		};
-
+		
 		// console log if set
+		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
 		if (this.$environment.EAPI_LOGGING === 'all') console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
 			console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		}
 		if (this.$environment.EAPI_LOGGING === 'warning' && ['warning', 'error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
-
+		
 		if (!this.pushToService) return;
+		if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL) return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
@@ -136,19 +140,21 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const type = 'info';
 		const title = 'Request';
 		const correlation = this.$client?.correlation || {};
-
+		
 		const body = ZodSchemaTools.redact(request.body, this.$client?.controller?.zodSchema?.[request.method]?.body ?? z.object({}));
 		const data = { path: request.path, method: request.method, headers: request.headers, body };
-
+		
 		// console log if set
+		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
 		if (this.$environment.EAPI_LOGGING === 'all') console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
 			console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		}
 		if (this.$environment.EAPI_LOGGING === 'warning' && ['warning', 'error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
-
+		
 		if (!this.pushToService) return;
+		if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL) return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
@@ -166,20 +172,22 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const type = response.status >= 500 ? 'error' : response.status >= 400 ? 'warning' : 'info';
 		const title = response.status >= 500 ? 'Response Error' : response.status >= 400 ? 'Response Warning' : 'Response Info';
 		const correlation = this.$client?.correlation || {};
-
+		
 		const parsedBody = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
 		const body = ZodSchemaTools.redact(parsedBody, this.$client?.controller?.zodSchema?.[response.method]?.response?.[response.status]?.schema ?? z.object({}));
 		const data = { status: response.status, headers: response.headers, body };
-
+		
 		// console log if set
+		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
 		if (this.$environment.EAPI_LOGGING === 'all') console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
 			console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		}
 		if (this.$environment.EAPI_LOGGING === 'warning' && ['warning', 'error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
 		if (this.$environment.EAPI_LOGGING === 'error' && ['error'].includes(type)) console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
-
+		
 		if (!this.pushToService) return;
+		if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL) return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
