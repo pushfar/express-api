@@ -7,6 +7,8 @@ import { GlobalsType } from '../Types/System.js';
  * @license MIT
  */
 export default class Request<T extends {
+    path?: string;
+    method?: string;
     context?: any;
     access?: any;
     resource?: any;
@@ -15,6 +17,8 @@ export default class Request<T extends {
     };
     body: any;
 } = {
+    path?: string;
+    method?: string;
     context?: {
         [key: string]: any;
     };

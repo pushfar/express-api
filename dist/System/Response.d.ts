@@ -6,11 +6,15 @@
  * @license MIT
  */
 export default class Response<T extends {
+    path?: string;
+    method?: string;
     headers: {
         [key: string]: string | string[] | undefined;
     };
     body: any;
 } = {
+    path?: string;
+    method?: string;
     headers: {
         [key: string]: string | string[] | undefined;
     };

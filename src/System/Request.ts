@@ -28,7 +28,7 @@ const require = createRequire(import.meta.url);
  * @license MIT 
  */
 export default class Request<
-	T extends { context?: any; access?: any; resource?: any; headers?: { [key: string]: string | string[] | undefined }; body: any } = { context?: { [key: string]: any }, access?: { [key: string]: any }, resource?: { name: string, method: string, path: string }, headers?: { [key: string]: string | string[] | undefined }, body: any; },
+	T extends { path?: string; method?: string; context?: any; access?: any; resource?: any; headers?: { [key: string]: string | string[] | undefined }; body: any } = { path?: string; method?: string; context?: { [key: string]: any }, access?: { [key: string]: any }, resource?: { name: string, method: string, path: string }, headers?: { [key: string]: string | string[] | undefined }, body: any; },
 	G extends GlobalsType = GlobalsType
 > {
 	private globals: G;

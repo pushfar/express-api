@@ -7,7 +7,7 @@ import DataTools from '../Library/DataTools';
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT 
  */
-export default class Response<T extends { headers: { [key: string]: string | string[] | undefined }, body: any } = { headers: { [key: string]: string | string[] | undefined }, body: any }> {
+export default class Response<T extends { path?: string; method?: string; headers: { [key: string]: string | string[] | undefined }, body: any } = { path?: string; method?: string; headers: { [key: string]: string | string[] | undefined }, body: any }> {
 	
 	public type: 'aws' | 'azure' | 'express' | 'socket';
 	public path!: string;
