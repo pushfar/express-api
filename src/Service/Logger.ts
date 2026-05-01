@@ -108,7 +108,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
-			response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
+			response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
 			error: payload?.error?.message,
 		};
 		
@@ -142,7 +142,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const correlation = this.$client?.correlation || {};
 		
 		const body = ZodSchemaTools.redact(request.body, this.$client?.controller?.zodSchema?.[request.method]?.body ?? z.object({}));
-		const data = { path: request.path, method: request.method, headers: request.headers, body };
+		const data = { request: { path: request.path, method: request.method, headers: request.headers, body } };
 		
 		// console log if set
 		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
@@ -175,7 +175,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		
 		const parsedBody = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
 		const body = ZodSchemaTools.redact(parsedBody, this.$client?.controller?.zodSchema?.[response.method]?.response?.[response.status]?.schema ?? z.object({}));
-		const data = { status: response.status, headers: response.headers, body };
+		const data = { response: { path: response.path, method: response.method, status: response.status, headers: response.headers, body } };
 		
 		// console log if set
 		if (!this.$environment.EAPI_LOGGING) console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
