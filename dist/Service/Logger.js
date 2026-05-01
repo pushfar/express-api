@@ -41,11 +41,13 @@ export default class Logger extends PushfarService {
         const responseBody = ZodSchemaTools.redact(parsedResponseBody, this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}));
         const data = {
             request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
-            response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
+            response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
             error: payload?.error?.message,
             dump: payload?.dump,
         };
         // console log if set
+        if (!this.$environment.EAPI_LOGGING)
+            console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
         if (this.$environment.EAPI_LOGGING === 'all')
             console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type))
@@ -56,6 +58,8 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}]: ${JSON.stringify(data)}\n`);
         if (!this.pushToService)
             return;
+        if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL)
+            return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
         return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
@@ -78,10 +82,12 @@ export default class Logger extends PushfarService {
         const responseBody = ZodSchemaTools.redact(parsedResponseBody, this.$client?.controller?.zodSchema?.[payload?.response?.method ?? 'get']?.response?.[payload?.response?.status || 200]?.schema ?? z.object({}));
         const data = {
             request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
-            response: { status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
+            response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
             error: payload?.error?.message,
         };
         // console log if set
+        if (!this.$environment.EAPI_LOGGING)
+            console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
         if (this.$environment.EAPI_LOGGING === 'all')
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
@@ -93,6 +99,8 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (!this.pushToService)
             return;
+        if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL)
+            return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
         return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
@@ -108,8 +116,10 @@ export default class Logger extends PushfarService {
         const title = 'Request';
         const correlation = this.$client?.correlation || {};
         const body = ZodSchemaTools.redact(request.body, this.$client?.controller?.zodSchema?.[request.method]?.body ?? z.object({}));
-        const data = { path: request.path, method: request.method, headers: request.headers, body };
+        const data = { request: { path: request.path, method: request.method, headers: request.headers, body } };
         // console log if set
+        if (!this.$environment.EAPI_LOGGING)
+            console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
         if (this.$environment.EAPI_LOGGING === 'all')
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
@@ -121,6 +131,8 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (!this.pushToService)
             return;
+        if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL)
+            return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
         return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
@@ -137,8 +149,10 @@ export default class Logger extends PushfarService {
         const correlation = this.$client?.correlation || {};
         const parsedBody = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
         const body = ZodSchemaTools.redact(parsedBody, this.$client?.controller?.zodSchema?.[response.method]?.response?.[response.status]?.schema ?? z.object({}));
-        const data = { status: response.status, headers: response.headers, body };
+        const data = { response: { path: response.path, method: response.method, status: response.status, headers: response.headers, body } };
         // console log if set
+        if (!this.$environment.EAPI_LOGGING)
+            console.log(`\nLOGGER NOTICE: EAPI_LOGGING environment variable is not set - Ensure you set the EAPI_LOGGING in your .env file!!!`);
         if (this.$environment.EAPI_LOGGING === 'all')
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (this.$environment.EAPI_LOGGING === 'info' && ['info', 'warning', 'error'].includes(type)) {
@@ -150,6 +164,8 @@ export default class Logger extends PushfarService {
             console.log(`\nLOG [${type}, ${title}, ${correlation.id}]: ${JSON.stringify(data)}\n`);
         if (!this.pushToService)
             return;
+        if (!this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL)
+            return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
         return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
