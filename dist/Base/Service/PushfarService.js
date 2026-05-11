@@ -37,7 +37,11 @@ export default class PushfarService extends Service {
             .catch(() => {
             throw new RestError('Could not contact backend system services, please try again later', 500);
         })
-            .then((res) => res.json().then((data) => ({ status: res.status, data })))
+            .then((res) => {
+            if (!res.body)
+                return { status: res.status, data: res.body };
+            return res.json().then((data) => ({ status: res.status, data }));
+        })
             .then((out) => {
             if (out.status >= 400)
                 throw new RestError(out.data, out.status);
