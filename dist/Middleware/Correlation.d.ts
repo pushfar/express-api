@@ -16,7 +16,7 @@ export default class Correlation<T extends GlobalsType & {
         correlation: {
             id: string;
             userId?: string;
-            organisationId?: string;
+            companyId?: string;
             impersonatorId?: string;
         };
     };

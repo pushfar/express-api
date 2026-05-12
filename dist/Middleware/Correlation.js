@@ -24,7 +24,7 @@ export default class Correlation extends Middleware {
         // only generate correlation if we are an api
         if (this.type !== 'api')
             return request;
-        this.$client.correlation = { id: CryptoTools.generateUuid(), userId: '', organisationId: '', impersonatorId: '' };
+        this.$client.correlation = { id: CryptoTools.generateUuid(), userId: '', companyId: '', impersonatorId: '' };
         return request;
     }
     /**
@@ -40,7 +40,7 @@ export default class Correlation extends Middleware {
         this.$client.correlation = {
             id: (request.headers?.['X-Correlation-Id'] || request.headers?.['x-correlation-id']),
             userId: (request.headers?.['X-User-Id'] || request.headers?.['x-user-id']),
-            organisationId: (request.headers?.['X-Organisation-Id'] || request.headers?.['x-organisation-id']),
+            companyId: (request.headers?.['X-Company-Id'] || request.headers?.['x-company-id']),
             impersonatorId: (request.headers?.['X-Impersonator-Id'] || request.headers?.['x-impersonator-id']),
         };
         return request;
@@ -57,7 +57,7 @@ export default class Correlation extends Middleware {
             return response;
         response.headers['X-Correlation-Id'] = this.$client.correlation?.id || '';
         response.headers['X-User-Id'] = this.$client.correlation?.userId || '';
-        response.headers['X-Organisation-Id'] = this.$client.correlation?.organisationId || '';
+        response.headers['X-Company-Id'] = this.$client.correlation?.companyId || '';
         response.headers['X-Impersonator-Id'] = this.$client.correlation?.impersonatorId || '';
         return response;
     }

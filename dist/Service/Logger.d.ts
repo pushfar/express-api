@@ -17,7 +17,7 @@ export default class Logger<T extends GlobalsType & {
         correlation: {
             id: string;
             userId?: string;
-            organisationId?: string;
+            companyId?: string;
             impersonatorId?: string;
         };
     };

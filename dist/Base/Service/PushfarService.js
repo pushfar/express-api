@@ -29,7 +29,7 @@ export default class PushfarService extends Service {
             ...options.headers,
             'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',
-            'X-Organisation-Id': this.$client.correlation?.organisationId?.toString() || '00000000-0000-0000-0000-000000000000',
+            'X-Company-Id': this.$client.correlation?.companyId?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-Impersonator-Id': this.$client.correlation?.impersonatorId?.toString() || '00000000-0000-0000-0000-000000000000',
         };
         // perform request
@@ -62,7 +62,7 @@ export default class PushfarService extends Service {
             ...options.headers,
             'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',
-            'X-Organisation-Id': this.$client.correlation?.organisationId?.toString() || '00000000-0000-0000-0000-000000000000',
+            'X-Company-Id': this.$client.correlation?.companyId?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-Impersonator-Id': this.$client.correlation?.impersonatorId?.toString() || '00000000-0000-0000-0000-000000000000',
         };
         // Start the fetch request
