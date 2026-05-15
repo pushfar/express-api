@@ -5,7 +5,16 @@ import { zodToOpenApiSchema } from '../../Library/ZodToOpenApi.js';
  * @module express-api/Base/Controller/ApiZod
  * @class ApiZod
  * @extends Controller
- * @description Base class for API controllers using Zod schemas for validation and OpenAPI generation
+ * @description Base class for API controllers using Zod schemas for validation and OpenAPI generation.
+ *
+ * To get fully inferred types from parse methods, pass the concrete schema type as the second generic:
+ *
+ *   const schema = { post: { description: '...', body: z.object({ name: z.string() }) } } satisfies ZodSchema;
+ *   class MyController extends ApiZod<Globals, typeof schema> { static get zodSchema() { return schema; } }
+ *
+ * Then `this.parseBody(request, 'post')` returns `{ name: string }` instead of `any`.
+ * When the method is omitted and auto-detected from the call stack, the return type is `any`.
+ *
  * @author Paul Smith (ulsmith) <paul.smith@ulsmith.net>
  * @license MIT
  */
@@ -26,13 +35,6 @@ export default class ApiZod extends Controller {
     options() {
         return zodToOpenApiSchema(this.constructor.zodSchema);
     }
-    /**
-     * @public parseBody
-     * @description Parse and validate the request body against the Zod schema defined in zodSchema()
-     * @param request The http request passed in to the system
-     * @param method The optional method to use if auto detection fails
-     * @returns The validated body data
-     */
     parseBody(request, method) {
         const m = method || this.getCallingMethod();
         const methodSchema = this.__getMethodSchema(m);
@@ -44,13 +46,6 @@ export default class ApiZod extends Controller {
         }
         return result.data;
     }
-    /**
-     * @public parsePathParameters
-     * @description Parse and validate the path parameters against the Zod schema defined in zodSchema()
-     * @param request The http request passed in to the system
-     * @param method The optional method to use if auto detection fails
-     * @returns The validated path parameter data
-     */
     parsePathParameters(request, method) {
         const m = method || this.getCallingMethod();
         const methodSchema = this.__getMethodSchema(m);
@@ -62,13 +57,6 @@ export default class ApiZod extends Controller {
         }
         return result.data;
     }
-    /**
-     * @public parseQueryParameters
-     * @description Parse and validate the query parameters against the Zod schema defined in zodSchema()
-     * @param request The http request passed in to the system
-     * @param method The optional method to use if auto detection fails
-     * @returns The validated query parameter data
-     */
     parseQueryParameters(request, method) {
         const m = method || this.getCallingMethod();
         const methodSchema = this.__getMethodSchema(m);
@@ -80,14 +68,6 @@ export default class ApiZod extends Controller {
         }
         return result.data;
     }
-    /**
-     * @public parseOutput
-     * @description Parse and validate response output against the Zod schema defined in zodSchema()
-     * @param data The response data to send out in a response
-     * @param method The optional method to use if auto detection fails
-     * @param statusCode The HTTP status code to select the response schema (defaults to 200)
-     * @returns The validated output data
-     */
     parseOutput(data, method, statusCode = 200) {
         const m = method || this.getCallingMethod();
         const methodSchema = this.__getMethodSchema(m);
