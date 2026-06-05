@@ -66,7 +66,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logHandler
@@ -111,7 +111,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logRequest
@@ -143,7 +143,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
     /**
      * @public @async logResponse
@@ -180,7 +180,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        return this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
     }
 }
 //# sourceMappingURL=Logger.js.map
