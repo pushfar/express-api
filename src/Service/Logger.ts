@@ -80,7 +80,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		return this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
 	}
 
 	/**
@@ -133,7 +133,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		return this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
 	}
 
 	/**
@@ -165,7 +165,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		return this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
 	}
 
 	/**
@@ -201,6 +201,6 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		return this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
 	}
 }
