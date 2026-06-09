@@ -133,8 +133,12 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 
 		for (const request of requests) {
 			if (!request.resource || !request.resource.path) {
+				// options requests from browsers should always respond a 200 or they cors error and hide issues
+				const method = request.method.toLowerCase();
+				const secFetchMode = (request.headers?.['sec-fetch-mode'] as string || request.headers?.['Sec-Fetch-Mode'] as string || '').toLowerCase();
+
 				return Promise.resolve((new Response(this._type, {
-					status: 404,
+					status: request.method === method && secFetchMode === 'cors' ? 200 : 404,
 					headers: {
 						'Content-Type': 'application/json',
 						'Access-Control-Allow-Origin': request && request.headers && request.headers.Origin ? request.headers.Origin : '*',
