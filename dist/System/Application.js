@@ -132,7 +132,7 @@ export default class Application {
                 const method = request.method.toLowerCase();
                 const secFetchMode = (request.headers?.['sec-fetch-mode'] || request.headers?.['Sec-Fetch-Mode'] || '').toLowerCase();
                 return Promise.resolve((new Response(this._type, {
-                    status: request.method === method && secFetchMode === 'cors' ? 200 : 404,
+                    status: method === 'options' && secFetchMode === 'cors' ? 200 : 404,
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': request && request.headers && request.headers.Origin ? request.headers.Origin : '*',

@@ -138,7 +138,7 @@ export default class Application<T extends GlobalsType & { $handler?: { file: st
 				const secFetchMode = (request.headers?.['sec-fetch-mode'] as string || request.headers?.['Sec-Fetch-Mode'] as string || '').toLowerCase();
 
 				return Promise.resolve((new Response(this._type, {
-					status: request.method === method && secFetchMode === 'cors' ? 200 : 404,
+					status: method === 'options' && secFetchMode === 'cors' ? 200 : 404,
 					headers: {
 						'Content-Type': 'application/json',
 						'Access-Control-Allow-Origin': request && request.headers && request.headers.Origin ? request.headers.Origin : '*',
