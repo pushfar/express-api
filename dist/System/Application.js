@@ -128,6 +128,7 @@ export default class Application {
             this.globals.$io = this.request.io;
         for (const request of requests) {
             if (!request.resource || !request.resource.path) {
+                // options requests from browsers should always respond a 200 or they cors error and hide issues
                 const method = request.method.toLowerCase();
                 const secFetchMode = (request.headers?.['sec-fetch-mode'] || request.headers?.['Sec-Fetch-Mode'] || '').toLowerCase();
                 return Promise.resolve((new Response(this._type, {

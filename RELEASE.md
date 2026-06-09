@@ -1,5 +1,9 @@
 # RELEASE
 
+## 1.1.2
+
+Add auto switch from 404 to 200 on browser options reuqets that 404 (as browsers must have a 200 back or CORS error hides the 404)
+
 ## 1.1.1
 
 Created new CryptoTools and deprecated Crypto.
