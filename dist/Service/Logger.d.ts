@@ -25,6 +25,16 @@ export default class Logger<T extends GlobalsType & {
     service: string;
     newrelic: any;
     pushToService: boolean;
+    private static loggerDownUntil;
+    private static readonly LOGGER_COOLDOWN_MS;
+    /**
+     * @private push
+     * @description Fire-and-forget the log payload to the logger service, with a circuit breaker so
+     * a down/unreachable logger never blocks or breaks the request flow
+     * @param endpoint The logger endpoint
+     * @param options The fetch options
+     */
+    private push;
     /**
      * @public @constructor
      * @description Constructor for the Logger service

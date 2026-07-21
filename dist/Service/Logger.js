@@ -10,7 +10,25 @@ import { z } from 'zod';
  * @copyright 2025 Pushfar (pushfar.com) all rights reserved
  * @license Unlicensed
  */
-export default class Logger extends PushfarService {
+class Logger extends PushfarService {
+    /**
+     * @private push
+     * @description Fire-and-forget the log payload to the logger service, with a circuit breaker so
+     * a down/unreachable logger never blocks or breaks the request flow
+     * @param endpoint The logger endpoint
+     * @param options The fetch options
+     */
+    push(endpoint, options) {
+        if (Date.now() < Logger.loggerDownUntil)
+            return; // circuit open — skip while logger is down
+        this.fetch(endpoint, options)
+            .then(() => {
+            Logger.loggerDownUntil = 0;
+        })
+            .catch(() => {
+            Logger.loggerDownUntil = Date.now() + Logger.LOGGER_COOLDOWN_MS; // back off; never let logging errors stop flow
+        });
+    }
     /**
      * @public @constructor
      * @description Constructor for the Logger service
@@ -66,7 +84,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.push(endpoint, options);
     }
     /**
      * @public @async logHandler
@@ -111,7 +129,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.push(endpoint, options);
     }
     /**
      * @public @async logRequest
@@ -143,7 +161,7 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.push(endpoint, options);
     }
     /**
      * @public @async logResponse
@@ -180,7 +198,13 @@ export default class Logger extends PushfarService {
             return console.log(`\nLOGGER NOTICE: EAPI_PUSHFAR_SERVICE_LOGGER_URL environment variable is not set - Ensure you set the EAPI_PUSHFAR_SERVICE_LOGGER_URL in your .env file!!!`);
         const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
         const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
-        this.fetch(endpoint, options).then(() => { }).catch(() => { }); // do not let logging errors stop flow
+        this.push(endpoint, options);
     }
 }
+// circuit breaker (per process): if the logger service is unreachable, back off instead of
+// firing a request on every log call. A slow/dead logger host otherwise spawns repeated ~10s
+// DNS lookups that pin the shared libuv threadpool and starve real backend calls.
+Logger.loggerDownUntil = 0;
+Logger.LOGGER_COOLDOWN_MS = 30000;
+export default Logger;
 //# sourceMappingURL=Logger.js.map
