@@ -26,27 +26,42 @@ export default class PushfarService extends Service {
     async fetch(endpoint, options) {
         options.headers = {
             'Content-Type': 'application/json',
+            // force a fresh socket per call — undici's pooled keep-alive sockets can be reused after
+            // the server (also this framework, ~5s default keepAliveTimeout) has half-closed them,
+            // causing an intermittent ECONNRESET on the write before the request ever reaches the
+            // target service (more likely the higher the network latency, e.g. remote/cloud dev links)
+            Connection: 'close',
             ...options.headers,
             'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-Company-Id': this.$client.correlation?.companyId?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-Impersonator-Id': this.$client.correlation?.impersonatorId?.toString() || '00000000-0000-0000-0000-000000000000',
         };
-        // perform request
-        return fetch(endpoint, options)
-            .catch(() => {
-            throw new RestError('Could not contact backend system services, please try again later', 500);
-        })
-            .then((res) => {
-            if (!res.body)
-                return { status: res.status, data: res.body };
-            return res.json().then((data) => ({ status: res.status, data }));
-        })
-            .then((out) => {
-            if (out.status >= 400)
-                throw new RestError(out.data, out.status);
-            return out.data;
-        });
+        // retry transient connection failures (stale/reset socket, DNS blip, connect timeout) — these
+        // never reach the target service, so retrying is always safe (nothing was processed downstream)
+        const transientCodes = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EAI_AGAIN', 'ENOTFOUND', 'UND_ERR_SOCKET', 'UND_ERR_CONNECT_TIMEOUT'];
+        const maxAttempts = 3;
+        let res;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                res = await fetch(endpoint, options);
+                break;
+            }
+            catch (error) {
+                const code = error?.cause?.code || error?.code;
+                if (attempt >= maxAttempts || !transientCodes.includes(code)) {
+                    console.log('backend fetch failed', { endpoint, code: code || error?.message, attempt });
+                    throw new RestError('Could not contact backend system services, please try again later', 500);
+                }
+                await new Promise((resolve) => setTimeout(resolve, 50 * attempt));
+            }
+        }
+        const out = !res.body
+            ? { status: res.status, data: res.body }
+            : { status: res.status, data: await res.json() };
+        if (out.status >= 400)
+            throw new RestError(out.data, out.status);
+        return out.data;
     }
     /**
      * @public fetchEventStream
@@ -59,6 +74,8 @@ export default class PushfarService extends Service {
         options.headers = {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
+            // see fetch() above — avoids reusing a stale pooled keep-alive socket
+            Connection: 'close',
             ...options.headers,
             'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
             'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',
