@@ -26,11 +26,6 @@ export default class PushfarService<T extends GlobalsType> extends Service<T> {
 	async fetch<T>(endpoint: string, options: { method: string; body: string; headers?: Record<string, string> | Headers }): Promise<T> {
 		options.headers = {
 			'Content-Type': 'application/json',
-			// force a fresh socket per call — undici's pooled keep-alive sockets can be reused after
-			// the server (also this framework, ~5s default keepAliveTimeout) has half-closed them,
-			// causing an intermittent ECONNRESET on the write before the request ever reaches the
-			// target service (more likely the higher the network latency, e.g. remote/cloud dev links)
-			Connection: 'close',
 			...options.headers,
 			'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
 			'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',
@@ -78,8 +73,6 @@ export default class PushfarService<T extends GlobalsType> extends Service<T> {
 		options.headers = {
 			'Content-Type': 'application/json',
 			Accept: 'text/event-stream',
-			// see fetch() above — avoids reusing a stale pooled keep-alive socket
-			Connection: 'close',
 			...options.headers,
 			'X-Correlation-Id': this.$client.correlation?.id?.toString() || '00000000-0000-0000-0000-000000000000',
 			'X-User-Id': this.$client.correlation?.userId?.toString() || '00000000-0000-0000-0000-000000000000',

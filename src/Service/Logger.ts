@@ -20,6 +20,31 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 	public newrelic: any;
 	public pushToService: boolean = true;
 
+	// circuit breaker (per process): if the logger service is unreachable, back off instead of
+	// firing a request on every log call. A slow/dead logger host otherwise spawns repeated ~10s
+	// DNS lookups that pin the shared libuv threadpool and starve real backend calls.
+	private static loggerDownUntil = 0;
+	private static readonly LOGGER_COOLDOWN_MS = 30000;
+
+	/**
+	 * @private push
+	 * @description Fire-and-forget the log payload to the logger service, with a circuit breaker so
+	 * a down/unreachable logger never blocks or breaks the request flow
+	 * @param endpoint The logger endpoint
+	 * @param options The fetch options
+	 */
+	private push(endpoint: string, options: { method: string; body: string }): void {
+		if (Date.now() < Logger.loggerDownUntil) return; // circuit open — skip while logger is down
+
+		this.fetch(endpoint, options)
+			.then(() => {
+				Logger.loggerDownUntil = 0;
+			})
+			.catch(() => {
+				Logger.loggerDownUntil = Date.now() + Logger.LOGGER_COOLDOWN_MS; // back off; never let logging errors stop flow
+			});
+	}
+
 	/**
 	 * @public @constructor
 	 * @description Constructor for the Logger service
@@ -80,7 +105,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.push(endpoint, options);
 	}
 
 	/**
@@ -133,7 +158,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.push(endpoint, options);
 	}
 
 	/**
@@ -165,7 +190,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.push(endpoint, options);
 	}
 
 	/**
@@ -201,6 +226,6 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const endpoint = `${this.$environment.EAPI_PUSHFAR_SERVICE_LOGGER_URL}/log`;
 		const options = { method: 'post', body: JSON.stringify({ type, title, correlation, data }) };
 
-		this.fetch(endpoint, options).then(() => {}).catch(() => {}); // do not let logging errors stop flow
+		this.push(endpoint, options);
 	}
 }
