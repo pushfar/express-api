@@ -1,5 +1,9 @@
 # RELEASE
 
+## 1.2.2
+
+Added support for s3 uploads with a base class to extend to bring in base s3 func
+
 ## 1.2.1
 
 Send log errors as { message, stack } so the logger service accepts them
