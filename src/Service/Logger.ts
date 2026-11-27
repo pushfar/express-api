@@ -88,7 +88,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
 			response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
-			error: payload?.error?.message,
+			error: payload?.error ? { message: payload.error.message, stack: payload.error.stack } : undefined,
 			dump: payload?.dump,
 		};
 		
@@ -140,7 +140,7 @@ export default class Logger<T extends GlobalsType & { $client: { correlation: { 
 		const data = {
 			request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
 			response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
-			error: payload?.error?.message,
+			error: payload?.error ? { message: payload.error.message, stack: payload.error.stack } : undefined,
 		};
 		
 		// console log if set

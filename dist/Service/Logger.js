@@ -64,7 +64,7 @@ class Logger extends PushfarService {
         const data = {
             request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
             response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
-            error: payload?.error?.message,
+            error: payload?.error ? { message: payload.error.message, stack: payload.error.stack } : undefined,
             dump: payload?.dump,
         };
         // console log if set
@@ -109,7 +109,7 @@ class Logger extends PushfarService {
         const data = {
             request: { path: payload?.request?.path, method: payload?.request?.method, headers: payload?.request?.headers, body: requestBody },
             response: { path: payload?.response?.path, method: payload?.response?.method, status: payload?.response?.status, headers: payload?.response?.headers, body: responseBody },
-            error: payload?.error?.message,
+            error: payload?.error ? { message: payload.error.message, stack: payload.error.stack } : undefined,
         };
         // console log if set
         if (!this.$environment.EAPI_LOGGING)
