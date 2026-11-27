@@ -52,7 +52,10 @@
 	},
 	"peerDependencies": {
 		"@aws-sdk/client-dynamodb": "^3.0.0",
+		"@aws-sdk/client-s3": "^3.0.0",
+		"@aws-sdk/credential-providers": "^3.0.0",
 		"@aws-sdk/lib-dynamodb": "^3.0.0",
+		"@aws-sdk/s3-presigned-post": "^3.0.0",
 		"amqplib": "^0.10.9",
 		"mysql2": "^3.15.3",
 		"pg": "^8.16.3"
